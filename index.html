@@ -13,8 +13,11 @@ header h1{margin:0;font-size:24px}
 header p{margin:4px 0 0;font-size:13px;opacity:.7}
 .main{max-width:1280px;margin:0 auto;padding:8px 14px 28px}
 .mapwrap{position:relative}
-.mapbox{background:#f7fffb;border-radius:26px;border:3px solid var(--edge);box-shadow:0 6px 0 var(--edge);overflow-x:auto}
-svg{width:100%;min-width:760px;height:auto;display:block;cursor:grab;user-select:none;-webkit-user-select:none}
+.mapbox{background:#f7fffb;border-radius:26px;border:3px solid var(--edge);box-shadow:0 6px 0 var(--edge);overflow:hidden}
+svg{width:100%;height:auto;display:block;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-y}
+.info{position:absolute;left:14px;bottom:16px;width:340px;max-width:calc(100% - 28px);background:#fffffff5;border:3px solid var(--edge);border-radius:18px;padding:10px 14px 12px;z-index:2;box-shadow:0 4px 0 var(--edge)}
+.info h2{margin:0 26px 4px 0;font-size:16px}
+#infoX{position:absolute;top:6px;right:8px;border:0;background:none;font-size:16px;cursor:pointer;padding:4px 6px;color:#6b7b83}
 svg.drag{cursor:grabbing}
 .rot{position:absolute;top:12px;right:12px;display:flex;gap:6px;align-items:center;z-index:2}
 .rot button{font:inherit;font-weight:800;font-size:14px;border:2px solid var(--edge);background:#fff;border-radius:12px;padding:6px 10px;cursor:pointer;box-shadow:0 3px 0 var(--edge)}
@@ -33,6 +36,18 @@ svg.drag{cursor:grabbing}
 .num.back{background:#2bb3a3}
 #detail{font-size:14px;line-height:1.65}
 #detail b{font-size:15px}
+.modeCard{margin-bottom:14px}
+.mbtns{display:grid;grid-template-columns:repeat(4,1fr) .6fr .6fr;gap:10px}
+.mb.mini{border-color:#b9c7ce;box-shadow:0 4px 0 #b9c7ce;justify-content:center}
+.mb.mini.on{background:#e3ecf0}
+.ob{font:inherit;font-weight:800;font-size:14px;border:3px solid #9ec5f5;background:#fff;border-radius:14px;padding:7px 12px;cursor:pointer;box-shadow:0 3px 0 #9ec5f5}
+.ob.on{background:#d6e8ff;box-shadow:none;transform:translateY(2px)}
+.mb{font:inherit;font-weight:800;font-size:16px;text-align:left;border:3px solid #ffb38f;background:#fff;border-radius:16px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:2px;line-height:1.3;box-shadow:0 4px 0 #ffb38f;transition:.12s}
+.mb small{font-size:12px;font-weight:600;opacity:.65}
+.mb:hover{transform:translateY(-2px)}
+.mb.on{background:#ffe3d3;transform:translateY(2px);box-shadow:none}
+.subRow{margin-top:12px;padding-top:12px;border-top:2px dashed var(--edge);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+@media(max-width:699px){.mbtns{grid-template-columns:1fr 1fr}.mb{font-size:14px;padding:10px}.mb.mini{flex-direction:row}}
 .zoneBar{margin-top:16px}
 .zbtns{display:flex;gap:10px;flex-wrap:wrap}
 .zb{font:inherit;font-weight:800;font-size:16px;border:3px solid var(--c,#ccc);background:#fff;border-radius:16px;padding:8px 16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.25;box-shadow:0 4px 0 var(--c,#ccc);transition:.12s}
@@ -67,20 +82,72 @@ svg.drag{cursor:grabbing}
 .pin circle{stroke:#fff;stroke-width:3}
 .pin text{fill:#fff;font-weight:800;font-size:18px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
 #walkers,#routeG{pointer-events:none}
+/* 手機：提示在地圖上方、說明卡在地圖正下方、旋轉按鈕縮小 */
+@media(max-width:699px){
+  .mapwrap{display:flex;flex-direction:column}
+  .rothint{position:static;order:1;margin:0 0 6px 4px;background:none;padding:0;font-size:13px}
+  .rot{position:static;order:2;justify-content:flex-start;margin:0 0 8px 2px;gap:6px}
+  .rot button{font-size:13px;padding:6px 10px;border-radius:10px}
+  .mapbox{order:3}
+  .info{position:relative;left:auto;bottom:auto;width:auto;max-width:none;margin-top:10px;order:4}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>🏥 中國附醫急診就診導覽</h1>
-  <p>就醫前先看一眼：選擇您被分到的區域，地圖會帶您從入口走到診間；也可以點選房間或編號，查看每一站的說明。</p>
+  <p>先按下面最符合您現在狀況的按鈕，地圖會一段一段帶您走；也可以點選地圖上的房間或編號看說明。</p>
 </header>
 <div class="main">
+  <div class="card modeCard"><h2>👋 你現在的狀況是？按一個，地圖會帶你走</h2>
+    <div class="mbtns">
+      <button class="mb" data-m="arrive">🚪 剛到急診<small>還沒給護理師看過</small></button>
+      <button class="mb" data-m="zone">🧭 護理師說我去某一區<small>A／B／D／E／小兒</small></button>
+      <button class="mb" data-m="next">💉 醫師叫我去打針、照 X 光<small>看診後的檢查</small></button>
+      <button class="mb" data-m="pay">💰 看完了，要結帳離開<small>批價櫃台 → 出口</small></button>
+      <button class="mb mini" data-m="wc">🚻 找廁所</button>
+      <button class="mb mini" data-m="obs">🛏️ 去留觀區</button>
+    </div>
+    <div class="subRow" id="zoneRow" style="display:none"><b id="zoneQ">護理師說你去哪一區？</b>
+      <div class="zbtns">
+        <button class="zb" data-z="A" style="--c:#7cc0f2">A 區<small>外傷</small></button>
+        <button class="zb" data-z="B" style="--c:#ffe066">B 區</button>
+        <button class="zb" data-z="D" style="--c:#8fd9b6">D 區</button>
+        <button class="zb" data-z="E" style="--c:#ffc36b">E 區</button>
+        <button class="zb" data-z="P" style="--c:#ffd062">P 區<small>小兒急診</small></button>
+        <button class="zb" id="zUnk" style="--c:#cfd8dc;font-size:14px">我不確定<small>在哪一區</small></button>
+      </div></div>
+    <div class="subRow" id="nextRow" style="display:none"><b>醫師請你去哪裡？</b>
+      <div class="zbtns">
+        <button class="nb" data-n="inj">💉 抽血／打針</button>
+        <button class="nb" data-n="xray">🩻 照 X 光</button>
+      </div></div>
+    <div class="subRow" id="wcRow" style="display:none"><b>你現在在哪裡？（也可以直接點地圖上你的位置）</b>
+      <div class="zbtns">
+        <button class="ob" data-o="door">急診入口</button>
+        <button class="ob" data-o="triage">檢傷站</button>
+        <button class="ob" data-o="pay">急診批價櫃台</button>
+        <button class="ob" data-o="wait">候診區</button>
+        <button class="ob" data-o="A">A 區</button>
+        <button class="ob" data-o="B">B 區</button>
+        <button class="ob" data-o="D">D 區</button>
+        <button class="ob" data-o="E">E 區</button>
+        <button class="ob" data-o="P">小兒急診</button>
+        <button class="ob" data-o="xray">X光室</button>
+        <button class="ob" data-o="ent">五官科診療區</button>
+        <button class="ob" data-o="elev">電梯前面</button>
+        <button class="ob" data-o="obsO">留觀區</button>
+        <button class="ob" id="wcUnk" style="border-color:#cfd8dc;box-shadow:0 3px 0 #cfd8dc">我不知道我在哪</button>
+      </div></div>
+    <button class="zb clr" id="zclr" style="display:none;margin-top:12px">✕ 清除路線，重新選</button>
+  </div>
   <div class="mapwrap">
-    <div class="rothint">🖱️ 左右拖曳地圖可旋轉</div>
+    <div class="rothint">↔️ 左右拖曳地圖可旋轉</div>
+    <div class="info" id="info"><button id="infoX" aria-label="關閉說明">✕</button><h2 id="dt">點選站點</h2><div id="detail">點地圖上的房間或編號，這裡會顯示說明。</div></div>
     <div class="rot">
-      <button id="rotL" title="向左旋轉">⟲ 左轉</button>
-      <button id="rotR" title="向右旋轉">右轉 ⟳</button>
-      <button id="rot0" title="回到預設角度">回正</button>
+      <button id="rotL" title="把地圖向左旋轉">⟲ 地圖左旋</button>
+      <button id="rotR" title="把地圖向右旋轉">地圖右旋 ⟳</button>
+      <button id="rot0" title="地圖回到預設角度">地圖回正</button>
     </div>
     <div class="mapbox"><svg id="map" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg">
       <defs><filter id="drop" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#2b5d4a" flood-opacity=".22"/></filter></defs>
@@ -89,28 +156,20 @@ svg.drag{cursor:grabbing}
       <g id="labels"></g>
       <g id="walkers"></g>
       <g id="pins"></g>
+      <g id="topG" style="pointer-events:none"></g>
     </svg></div>
   </div>
-  <div class="card zoneBar"><h2>🧭 你被分到哪一區？選一個，地圖會帶你走過去</h2>
-    <div class="zbtns">
-      <button class="zb" data-z="A" style="--c:#7cc0f2">A 區<small>外傷</small></button>
-      <button class="zb" data-z="B" style="--c:#ffe066">B 區<small>非外傷</small></button>
-      <button class="zb" data-z="D" style="--c:#8fd9b6">D 區<small>非外傷</small></button>
-      <button class="zb" data-z="E" style="--c:#ffc36b">E 區<small>非外傷</small></button>
-      <button class="zb clr" id="zclr">清除路線</button>
-    </div>
-    <div id="routeTxt" style="display:none"></div>
-  </div>
+  <div class="card" id="routeCard" style="display:none;margin-top:16px"><div id="routeTxt"></div></div>
   <div class="panel">
-    <div class="card stepsCard"><h2>🗺️ 看診流程（點一下可定位）</h2><ol class="steps" id="steps"></ol></div>
-    <div class="card detailCard"><h2 id="dt">點選站點</h2><div id="detail">點地圖上的房間或編號，這裡會顯示說明。</div></div>
+    <div class="card stepsCard"><h2>🗺️ 看診流程（點一下，看這一站在地圖上的哪裡）</h2><ol class="steps" id="steps"></ol></div>
   </div>
   <p class="tip">※ 示意圖，實際動線與流程請依院內護理人員及標示指引。</p>
 </div>
 <script>
 const NS="http://www.w3.org/2000/svg";
 /* ---------- 投影（可旋轉） ---------- */
-const S_=0.76, K=0.58, OX=640, OY=392, CX=480, CY=505, DEF_ANG=28, HS=0.42;
+let K=0.58, KT=0.58;            // 俯視程度：0.58＝立體斜視，0.9＝鳥瞰
+const S_=0.76, OX=640, OY=392, CX=480, CY=505, DEF_ANG=28, HS=0.42;
 let ang=DEF_ANG, target=DEF_ANG, cA=1, sA=0;
 function setAng(a){cA=Math.cos(a*Math.PI/180);sA=Math.sin(a*Math.PI/180)}
 const P=(x,y,z=0)=>{const dx=x-CX,dy=y-CY;return [(dx*cA-dy*sA)*S_+OX,(dx*sA+dy*cA)*K*S_+OY-z]};
@@ -119,7 +178,7 @@ const pts=a=>a.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
 function shade(hex,f){const n=parseInt(hex.slice(1),16);const r=(n>>16)&255,g=(n>>8)&255,b=n&255;
   const m=v=>Math.max(0,Math.min(255,Math.round(v*f)));return `rgb(${m(r)},${m(g)},${m(b)})`}
 const $=id=>document.getElementById(id);
-const svg=$("map"),world=$("world"),labels=$("labels"),pinsG=$("pins"),routeG=$("routeG"),walkersG=$("walkers");
+const svg=$("map"),world=$("world"),labels=$("labels"),pinsG=$("pins"),routeG=$("routeG"),walkersG=$("walkers"),topG=$("topG");
 function el(tag,attrs,parent,html){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(html!=null)e.innerHTML=html;parent.appendChild(e);return e}
 function box(parent,x,y,w,h,z,color,z0=0){
   const c=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
@@ -138,34 +197,36 @@ const R=[
  {id:"fast",x:185,y:158,w:82,h:82,z:24,c:"#c6ecdb",t:"快速診療室",i:"⚡",fs:13,d:"症狀較輕者的快速診療室。"},
  {id:"head",x:268,y:236,w:78,h:59,z:22,c:"#d9d3f3",t:"護理長室",fs:12},
  {id:"ent",x:348,y:158,w:222,h:135,z:26,c:"#c6ecdb",t:"五官科診療區",i:"👂",fs:18,d:"五官科診療區。"},
- {id:"elev",x:572,y:158,w:52,h:135,z:22,c:"#dfe8ec",t:"電梯",i:"🛗",v:1,fs:13},
- {id:"stair",x:668,y:108,w:56,h:62,z:18,c:"#dfe8ec",t:"",i:"🪜",fs:20},
- {id:"wc",x:728,y:108,w:62,h:62,z:18,c:"#dfe8ec",t:"",i:"🚻",fs:22},
- {id:"vip",x:800,y:0,w:140,h:290,z:44,c:"#f6cfe8",t:"",nolabel:1,d:"此區域不在一般就診動線上。"},
+ {id:"elev",x:572,y:158,w:52,h:135,z:22,c:"#dfe8ec",t:"電梯",i:"🛗",v:1,fs:13,d:"電梯，在五官科診療區旁邊。"},
+ {id:"stair",x:668,y:108,w:56,h:62,z:18,c:"#dfe8ec",t:"樓梯",i:"🪜",fs:13,d:"樓梯，在電梯再往裡面。"},
+ {id:"wc",x:690,y:233,w:62,h:62,z:18,c:"#cfe3ff",t:"廁所",i:"🚻",fs:13,d:"<b>廁所</b>，緊鄰五官科前面的走道，過了電梯再往前一小段。不確定怎麼走時，請問現場的護理人員或志工。"},
+ {id:"vip",x:800,y:0,w:140,h:290,z:44,c:"#f6cfe8",t:"留觀區",i:"🛏️",fs:18,d:"<b>留觀區</b>：需要留下來觀察的病人，依護理人員指示到這裡。"},
  {id:"wait",x:35,y:160,w:80,h:270,z:24,c:"#ffe08a",t:"候診區",i:"🪑",v:1,fs:17,d:"位於<b>急診大廳</b>內。完成掛號後，在這裡坐著等候叫號。"},
  {id:"guard",x:253,y:350,w:110,h:52,z:22,c:"#d9d3f3",t:"保護室",fs:13},
- {id:"xray",x:765,y:355,w:100,h:90,z:24,c:"#bfe3fb",t:"X光室",i:"🩻",fs:15,d:"醫師開立 X 光檢查時，到這裡拍攝。"},
- {id:"xreg",x:870,y:350,w:46,h:165,z:24,c:"#bfe3fb",t:"X光登記處",v:1,fs:13,d:"X 光檢查報到登記處。"},
- {id:"ct",x:765,y:452,w:100,h:84,z:24,c:"#bfe3fb",t:"低劑量快速掃描室",i:"🔬",fs:12,d:"低劑量快速掃描檢查室。"},
- {id:"intl",x:920,y:350,w:52,h:365,z:30,c:"#f6cfe8",t:"國際醫療門診區",v:1,fs:15,d:"國際醫療門診區。"},
- {id:"pay",x:35,y:565,w:65,h:112,z:22,c:"#ffd062",t:"急診批價",i:"ℹ️",v:1,fs:14,d:"位於<b>急診大廳</b>內。掛號、批價與詢問。看完診後也回到這裡結帳。"},
+ {id:"xray",x:765,y:355,w:100,h:181,z:24,c:"#bfe3fb",t:"X光室",i:"🩻",fs:17,d:"醫師開立 X 光檢查時，直接到這裡報到、拍攝。<b>有兩個門</b>：一個在五官科前面的走道上，一個靠診療區這一側。"},
+ {id:"xd1",flat:1,x:800,y:347,w:30,h:10,z:5,c:"#fff3c4",t:"門",i:"🚪",fs:12,d:"X光室的門，在五官科前面的走道上。"},
+ {id:"xd2",flat:1,x:752,y:489,w:16,h:10,z:5,c:"#fff3c4",t:"門",i:"🚪",fs:12,d:"X光室的另一個門，靠診療區這一側。B 區的病人照 X 光走這個門。"},
+ {id:"pay",x:35,y:565,w:65,h:112,z:22,c:"#ffd062",t:"急診批價",i:"💰",v:1,fs:14,note:"掛號・結帳",d:"位於<b>急診大廳</b>內，是<b>掛號和結帳繳費的櫃台</b>（院內稱「批價」）。看完診後也回到這裡結帳。"},
  {id:"triage",x:158,y:690,w:92,h:80,z:24,c:"#ffbba6",t:"檢傷站",i:"🩺",fs:15,d:"護理人員量體溫、血壓、脈搏並詢問症狀，依嚴重程度分級。"},
- {id:"comp",x:253,y:718,w:92,h:60,z:50,z0:36,c:"#d9d3f3",t:"綜合處理區",fs:12},
- {id:"c",x:253,y:718,w:490,h:240,z:36,c:"#ffb3aa",t:"急救區（C區）",i:"🚨",fs:24,d:"病況危急者由救護車從急救入口直接送入，優先處置。"},
+ {id:"comp",x:253,y:718,w:92,h:60,z:44,z0:30,c:"#d9d3f3",t:"綜合處理區",fs:12},
+ {id:"c",x:253,y:718,w:490,h:180,z:30,c:"#ffb3aa",t:"急救區（C區）",i:"🚨",fs:19,d:"病況危急者由救護車從急救入口直接送入，優先處置。"},
  {id:"or",x:750,y:620,w:90,h:156,z:26,c:"#bfe3fb",t:"手術室",i:"🔪",v:1,fs:15},
  {id:"trauma",x:840,y:620,w:80,h:156,z:26,c:"#ffb3aa",t:"外傷搶救區",v:1,fs:14},
  {id:"iso1",x:750,y:850,w:88,h:90,z:14,c:"#e9eef0",t:"",nolabel:1},
  {id:"iso2",x:840,y:850,w:80,h:90,z:14,c:"#e9eef0",t:"",nolabel:1},
  {id:"med",x:35,y:800,w:65,h:160,z:22,c:"#d9d3f3",t:"醫病會談室",v:1,fs:14},
  {id:"police",x:105,y:800,w:50,h:160,z:22,c:"#d9d3f3",t:"警衛櫃檯",v:1,fs:13},
- {id:"in1",x:135,y:962,w:116,h:40,z:10,c:"#ffb27a",t:"急診入口",i:"🚪",fs:15,d:"自行前來就醫的病人，從這裡進入<b>急診大廳</b>。"},
- {id:"in2",x:430,y:962,w:140,h:40,z:10,c:"#ff9c9c",t:"急救入口",i:"🚑",fs:15,d:"救護車送達的危急病人專用入口。"},
- {id:"in3",x:780,y:962,w:155,h:40,z:10,c:"#b9e08f",t:"隔離入口",i:"😷",fs:15,d:"發燒或疑似傳染病的病人，請由此入口，避免交互感染。"},
- {id:"decon",x:580,y:964,w:190,h:36,z:10,c:"#b9e08f",t:"毒化災除污區",fs:12},
- {id:"zD",x:275,y:432,w:225,h:128,z:20,c:"#8fd9b6",t:"D",fs:46,sub:"D區",tag:"非外傷",fr:[277,434,78,42]},
- {id:"zE",x:500,y:432,w:225,h:128,z:20,c:"#ffc36b",t:"E",fs:46,sub:"E區",tag:"非外傷",fr:[534,434,78,42]},
+ {id:"in1",flat:1,x:135,y:956,w:116,h:10,z:5,c:"#ffb27a",t:"急診入口",i:"🚪",fs:15,d:"自行前來就醫的病人，從這裡進入<b>急診大廳</b>。"},
+ {id:"decon",flat:1,x:575,y:896,w:160,h:10,z:5,c:"#b9e08f",t:"毒化災除污區",fs:12},
+ // 保護室旁的牆：隔開五官科前的走道與 D、E 區旁的走道，上面有兩個門
+ {id:"wall1",x:363,y:371,w:122,h:8,z:34,c:"#b9c5cb",t:"",nm:"牆壁",nolabel:1,d:"牆壁。要到另一側請走旁邊的門。"},
+ {id:"wall2",x:515,y:371,w:230,h:8,z:34,c:"#b9c5cb",t:"",nm:"牆壁",nolabel:1,d:"牆壁。要到另一側請走旁邊的門。"},
+ {id:"door1",flat:1,x:485,y:370,w:30,h:10,z:5,c:"#fff3c4",t:"門",i:"🚪",fs:12,d:"在 D、E 區注射區的<b>對面</b>，走出去就是<b>電梯前面</b>和五官科前面的走道。"},
+ {id:"door2",flat:1,x:745,y:370,w:20,h:10,z:5,c:"#fff3c4",t:"門",i:"🚪",fs:12,d:"在牆的最後面、靠近 X光室。走出去就是五官科前面的走道，<b>X光室的入口</b>就在走道上。"},
+ {id:"zD",x:275,y:432,w:225,h:128,z:20,c:"#8fd9b6",t:"D",fs:46,sub:"D區",tag:"",fr:[277,434,78,42]},
+ {id:"zE",x:500,y:432,w:225,h:128,z:20,c:"#ffc36b",t:"E",fs:46,sub:"E區",tag:"",fr:[534,434,78,42]},
  {id:"zA",x:275,y:560,w:225,h:128,z:20,c:"#7cc0f2",t:"A",fs:46,sub:"A區",tag:"外傷",fr:[277,644,78,42]},
- {id:"zB",x:500,y:560,w:225,h:128,z:20,c:"#ffe066",t:"B",fs:46,sub:"B區",tag:"非外傷",fr:[534,644,78,42]},
+ {id:"zB",x:500,y:560,w:225,h:128,z:20,c:"#ffe066",t:"B",fs:46,sub:"B區",tag:"",fr:[534,644,78,42]},
  {id:"injDE",x:468,y:434,w:64,h:42,z:21,z0:20,c:"#ffe1e1",t:"注射區",fs:12,lc:"#d32f2f",fr:[468,434,64,42],frc:"#e53935",d:"<b>D、E 區的注射區</b>（紅色框），在 D 區與 E 區的交界處，各佔兩區一點位置。看完診需要抽血或打針時到這裡。"},
  {id:"injAB",x:468,y:644,w:64,h:42,z:21,z0:20,c:"#ffe1e1",t:"注射區",fs:12,lc:"#d32f2f",fr:[468,644,64,42],frc:"#e53935",d:"<b>A、B 區的注射區</b>（紅色框），在 A 區與 B 區的交界處，各佔兩區一點位置。看完診需要抽血或打針時到這裡。"}
 ];
@@ -190,14 +251,14 @@ function sorted(){
 }
 /* ---------- 流程站點 ---------- */
 const S=[
- {n:1,f:[193,982],zt:10,t:"走進急診入口",room:"in1",d:"自行就醫從<b>急診入口</b>進入<b>急診大廳</b>。<br>🚑 救護車送達者走<b>急救入口</b>；😷 發燒／疑似傳染者走<b>隔離入口</b>。"},
+ {n:1,f:[193,982],zt:10,t:"走進急診入口",room:"in1",d:"從<b>急診入口</b>進入<b>急診大廳</b>。"},
  {n:2,f:[204,730],zt:24,t:"檢傷分類",room:"triage",d:"到<b>檢傷站</b>，護理人員量測生命徵象、詢問症狀，依嚴重程度決定看診順序。"},
- {n:3,f:[67,585],zt:22,t:"掛號",room:"pay",d:"在<b>急診大廳</b>的<b>急診批價</b>櫃台辦理掛號與基本資料登錄。"},
+ {n:3,f:[122,582],zt:5,t:"掛號",room:"pay",d:"在<b>急診大廳</b>的<b>急診批價</b>櫃台辦理掛號與基本資料登錄。"},
  {n:4,f:[75,295],zt:24,t:"候診",room:"wait",d:"在<b>急診大廳</b>的<b>候診區</b>稍坐，留意叫號，等待進入診療區。"},
  {n:5,f:[264,520],zt:6,t:"進診療區看診",room:"",d:"從<b>急診大廳</b>進入<b>診療區</b>，依病況前往：<b>A 區＝外傷</b>、<b>B／D／E 區＝非外傷</b>。由醫師問診、診察，並依需要開立檢查。"},
- {n:6,f:[815,400],zt:24,t:"檢查／抽血打針",room:"xray",d:"依醫師指示前往<b>X光室</b>或<b>低劑量快速掃描室</b>做檢查；需要抽血或打針時，到診療區內紅色框的<b>注射區</b>（D、E 區交界處，或 A、B 區交界處）。"},
+ {n:6,f:[850,400],zt:24,t:"檢查／抽血打針",room:"xray",d:"依醫師指示前往<b>X光室</b>做檢查；需要抽血或打針時，到診療區內紅色框的<b>注射區</b>（D、E 區交界處，或 A、B 區交界處）。"},
  {n:7,f:[736,560],zt:6,t:"回診療區",back:1,room:"",d:"檢查完回到<b>診療區</b>，醫師說明結果，進行處置、注射或開立處方。"},
- {n:8,f:[67,662],zt:22,t:"批價離院",back:1,room:"pay",d:"回<b>急診批價</b>結帳、領取單據，依指示從急診入口離開 👋"}
+ {n:8,f:[122,662],zt:5,t:"結帳離院",back:1,room:"pay",d:"回<b>急診批價</b>（掛號・結帳櫃台）結帳繳費、領取單據，依指示從急診入口離開 👋"}
 ];
 /* ---------- 分區路線 ---------- */
 const COMMON=[[205,1030],[205,880],[205,792],[130,792],[130,620],[160,620],[160,300],[200,300]];
@@ -205,35 +266,127 @@ const NY=418, SY=703;   // 北側走道（保護室與 D、E 區之間）、南�
 const isAB=L=>L==="A"||L==="B";
 const ZINFO={
  A:{c:"#7cc0f2",x:316,y:668,name:"A 區（外傷區）",go:"沿診療區旁走到 <b>A、B 區與急救區（C區）之間的走道</b>，走道上第一區就是 <b>A 區</b>，<b>紫色框</b>是看診區。"},
- D:{c:"#8fd9b6",x:316,y:452,name:"D 區（非外傷區）",go:"走進<b>保護室與 D、E 區之間的走道</b>，走道上第一區就是 <b>D 區</b>，<b>紫色框</b>是看診區。"},
- B:{c:"#ffe066",x:573,y:668,name:"B 區（非外傷區）",go:"沿診療區旁走到 <b>A、B 區與急救區（C區）之間的走道</b>，沿走道<b>經過 A 區</b>後就是 <b>B 區</b>，<b>紫色框</b>是看診區。"},
- E:{c:"#ffc36b",x:573,y:452,name:"E 區（非外傷區）",go:"走進<b>保護室與 D、E 區之間的走道</b>，沿走道<b>經過 D 區</b>後就是 <b>E 區</b>，<b>紫色框</b>是看診區。"}
+ D:{c:"#8fd9b6",x:316,y:452,name:"D 區",go:"走進<b>保護室與 D、E 區之間的走道</b>，走道上第一區就是 <b>D 區</b>，<b>紫色框</b>是看診區。"},
+ B:{c:"#ffe066",x:573,y:668,name:"B 區",go:"沿診療區旁走到 <b>A、B 區與急救區（C區）之間的走道</b>，沿走道<b>經過 A 區</b>後就是 <b>B 區</b>，<b>紫色框</b>是看診區。"},
+ P:{c:"#ffd062",x:160,y:156,name:"小兒急診（P區）"},
+ E:{c:"#ffc36b",x:573,y:452,name:"E 區",go:"走進<b>保護室與 D、E 區之間的走道</b>，沿走道<b>經過 D 區</b>後就是 <b>E 區</b>，<b>紫色框</b>是看診區。"}
 };
 R.filter(r=>r.sub).forEach(r=>{const L=r.t;r.d=`<b>${ZINFO[L].name}</b>`});
 const injOf=L=>(L==="A"||L==="B")?"injAB":"injDE";
-// 目前要顯示的路線：來程（入口→分區），或看診後（分區→抽血注射區／X光室）
-function zonePts(L){const Z=ZINFO[L];
-  if(st.next==="inj"){const yy=isAB(L)?665:455,ex=(L==="A"||L==="D")?472:528;
-    return [[Z.x+(ex<500?30:-30),yy],[ex,yy]];}   // 在區內直接走到交界處的注射區
-  if(st.next==="xray")return isAB(L)
-    ?[[Z.x,Z.y],[Z.x,SY],[736,SY],[736,600],[755,600],[755,400]]
-    :[[Z.x,Z.y],[Z.x,NY],[755,NY],[755,400]];
-  return COMMON.concat(isAB(L)
-    ?[[200,600],[264,600],[264,SY],[Z.x,SY],[Z.x,Z.y]]
-    :[[200,NY],[Z.x,NY],[Z.x,Z.y]]);}
-const destId=()=>st.next==="inj"?injOf(st.zone):(st.next==="xray"?"xray":"z"+st.zone);
+// 路線分段：剛到（入口→檢傷→掛號→候診）、去分區（候診→分區）、看診後（分區→注射區／X光室）、結帳離開
+const DOOR=[205,1030],TRIP=[205,790],PAYP=[130,620],WAITP=[130,300];
+// 路線加上起點、終點的名稱，標記上會寫「出發：候診區」「到了：X光室」
+function curRoute(){
+  const r=curRoute0();if(!r)return r;
+  const m=st.mode,L=st.zone,zn=L==="P"?"兒科診療區":L?L+" 區":"";
+  if(GO[m]){r.to=GO[m].n;r.from=st.org?ORG[st.org].n:""}
+  else if(m==="arrive"){r.from="急診入口";r.to="候診區"}
+  else if(m==="zone"){r.from="候診區";r.to=L==="P"?"兒科診療區":L+" 區看診區"}
+  else if(m==="next"){r.from=zn;r.to=st.next==="inj"?"注射區":"X光室"}
+  else if(m==="pay"){r.from=zn||"批價櫃台";r.to="出口"}
+  return r;
+}
+function curRoute0(){
+  const m=st.mode,L=st.zone,Z=L&&ZINFO[L];
+  if(GO[m]){const G=GO[m];
+    if(!st.org)return {key:m,pts:[G.at],stops:[],dest:G.room,mark:G.n,tipZ:ZH(byId[G.room].z)};
+    return {key:m+st.org,pts:wcPts(st.org,G.x),stops:[],dest:G.room,mark:G.n};}
+  if(m==="arrive")return {key:"arrive",pts:[DOOR,TRIP,[130,790],PAYP,WAITP],dest:"wait",
+    stops:[{p:TRIP,t:"1 檢傷"},{p:PAYP,t:"2 掛號"},{p:WAITP,t:"3 候診"}]};
+  if(m==="zone"&&L){
+    const pts=L==="P"?[WAITP,[160,300],[160,156]]
+      :isAB(L)?[WAITP,[200,300],[200,620],[264,620],[264,SY],[Z.x,SY],[Z.x,Z.y]]
+      :[WAITP,[200,300],[200,NY],[Z.x,NY],[Z.x,Z.y]];
+    return {key:"zone"+L,pts,stops:[],dest:L==="P"?"pedsclinic":"z"+L};}
+  if(m==="next"&&L&&st.next==="inj"&&L!=="P"){
+    const yy=isAB(L)?665:455,ex=(L==="A"||L==="D")?472:528;
+    return {key:"inj"+L,pts:[[Z.x+(ex<500?30:-30),yy],[ex,yy]],stops:[],dest:injOf(L)};}
+  if(m==="next"&&L&&st.next==="xray"){
+    // X光室的入口在五官科前面的走道上；從診療區要穿過牆最後面的門
+    const pts=L==="P"?[[160,156],[160,322],[815,322],[815,345]]
+      :L==="A"?[[Z.x,Z.y],[Z.x,SY],[264,SY],[264,620],[200,620],[200,322],[815,322],[815,345]]   // A 區繞大廳，不經過 B 區
+      :L==="B"?[[Z.x,Z.y],[Z.x,SY],[736,SY],[736,600],[755,600],[755,494],[763,494]]            // B 區走 X光室靠診療區這側的門
+      :L==="D"?[[Z.x,Z.y],[Z.x,NY],[200,NY],[200,322],[815,322],[815,345]]      // D 區經急診大廳
+      :[[Z.x,Z.y],[Z.x,NY],[500,NY],[500,335],[815,335],[815,345]];             // E 區走注射區對面的門
+    return {key:"xray"+L,pts,stops:[],dest:"xray"};}
+  if(m==="pay"){
+    const out=[PAYP,[130,790],TRIP,DOOR];
+    const pts=!L?out:L==="P"?[[160,156],[160,300],WAITP].concat(out)
+      :isAB(L)?[[Z.x,Z.y],[Z.x,SY],[264,SY],[264,620]].concat(out)
+      :[[Z.x,Z.y],[Z.x,NY],[200,NY],[200,620]].concat(out);
+    return {key:"pay"+(L||""),pts,stops:[{p:PAYP,t:"結帳"}],dest:"in1"};}
+  return null;
+}
+let RT=null;
+/* 找廁所：出發位置（p 是用來判斷「點地圖時離哪裡最近」的參考點） */
+const ORG={
+ door:{n:"急診入口",p:[193,960]}, triage:{n:"檢傷站",p:[204,730]}, pay:{n:"急診批價櫃台",p:[67,620]}, wait:{n:"候診區",p:[75,295]},
+ A:{n:"A 區",p:[387,624]}, B:{n:"B 區",p:[612,624]}, D:{n:"D 區",p:[387,496]}, E:{n:"E 區",p:[612,496]},
+ P:{n:"小兒急診",p:[330,90]}, xray:{n:"X光室",p:[815,440]},
+ ent:{n:"五官科診療區",p:[459,225]}, elev:{n:"電梯前面",p:[598,225]}, obsO:{n:"留觀區",p:[870,145],only:"wc"}
+};
+// 從「你現在的位置」出發的目的地：廁所、留觀區（入口都在五官科前的走道旁；x 是入口在走道上的位置）
+const GO={
+ wc:{n:"廁所",room:"wc",x:721,at:[721,264],hint:"（地圖上 🚻 的藍色方塊）",rect:[690,233,62,62]},
+ obs:{n:"留觀區",room:"vip",x:870,at:[870,145],hint:"（地圖上粉紅色的大方塊）",rect:[800,0,140,290]}
+};
+function wcPts(o,gx){
+  const tail=[[gx,322],[gx,300]],hall=[[130,322]].concat(tail);
+  if(o==="door")return [DOOR,TRIP,[130,790]].concat(hall);
+  if(o==="triage")return [TRIP,[130,790]].concat(hall);
+  if(o==="pay")return [PAYP].concat(hall);
+  if(o==="wait")return [WAITP].concat(hall);
+  if(o==="P")return [[160,156],[160,322]].concat(tail);
+  if(o==="xray")return [[815,335],[815,322]].concat(tail);
+  if(o==="ent")return [[459,322]].concat(tail);
+  if(o==="elev")return [[598,322]].concat(tail);
+  if(o==="obsO")return [[870,322]].concat(tail);
+  const Z=ZINFO[o];
+  if(o==="D")return [[Z.x,Z.y],[Z.x,NY],[200,NY],[200,322]].concat(tail);      // D 區經急診大廳
+  if(o==="E")return [[Z.x,Z.y],[Z.x,NY],[500,NY],[500,322]].concat(tail);      // E 區走注射區對面的門
+  if(o==="A")return [[Z.x,Z.y],[Z.x,SY],[264,SY],[264,620],[200,620],[200,322]].concat(tail);   // A 區繞大廳，不經過 B 區
+  return (o==="B"?[[Z.x,Z.y],[Z.x,SY],[736,SY],[736,600],[755,600],[755,322]]:[[Z.x,Z.y],[Z.x,NY],[755,NY],[755,322]]).concat(tail);
+}
+function nearestOrg(x,y){let best=null,bd=1e9;for(const k in ORG){if(ORG[k].only&&ORG[k].only!==st.mode)continue;const d=Math.hypot(ORG[k].p[0]-x,ORG[k].p[1]-y);if(d<bd){bd=d;best=k}}return best}
+function unP(sx,sy){const dx=(sx-OX)/S_,dy=(sy-OY+8)/(K*S_);return [dx*cA+dy*sA+CX,-dx*sA+dy*cA+CY]}
 /* ---------- 狀態 ---------- */
-const st={step:1,room:"in1",zone:null,next:null};
+const st={step:1,room:"in1",mode:null,zone:null,next:null};
 /* ---------- 繪製 ---------- */
+/* 視野：電腦顯示整張；窄螢幕（手機）整張縮進畫面，選了路線就自動拉近到路線 */
+let FK=1, NARROW=false;
+function destRect(){const zr=byId[RT.dest];return zr.sub?zr.fr:[zr.x,zr.y,zr.w,zr.h]}
+function fitView(){
+  NARROW=window.innerWidth<700;
+  if(!NARROW){FK=1;svg.setAttribute("viewBox","0 0 1280 800");return}
+  let ps=[],pad=24,top=30;
+  if(RT&&RT.pts.length>1){            // 只有目的地標記、還沒選出發點時，維持顯示整張地圖
+    ps=RT.pts.map(p=>P(p[0],p[1],7));
+    const [x,y,w,h]=destRect();[[x,y],[x+w,y],[x+w,y+h],[x,y+h]].forEach(c=>ps.push(P(c[0],c[1],12)));
+    pad=70;top=95;FK=1.25;
+  }else{
+    [[-30,-26],[1000,-26],[1000,1070],[-30,1070]].forEach(c=>{ps.push(P(c[0],c[1],-18));ps.push(P(c[0],c[1],24))});
+    FK=1.6;
+  }
+  let x0=Math.min(...ps.map(p=>p[0]))-pad,x1=Math.max(...ps.map(p=>p[0]))+pad,
+      y0=Math.min(...ps.map(p=>p[1]))-top,y1=Math.max(...ps.map(p=>p[1]))+pad;
+  let w=x1-x0,h=y1-y0;
+  if(w<420){x0-=(420-w)/2;w=420}
+  const a=Math.max(0.72,Math.min(1.15,h/w));
+  if(h<w*a){y0-=(w*a-h)/2;h=w*a}else{const nw=h/a;x0-=(nw-w)/2;w=nw}
+  svg.setAttribute("viewBox",`${x0.toFixed(0)} ${y0.toFixed(0)} ${w.toFixed(0)} ${h.toFixed(0)}`);
+}
 function render(){
-  setAng(ang);
+  setAng(ang);RT=curRoute();fitView();
   world.innerHTML="";labels.innerHTML="";pinsG.innerHTML="";
   box(world,-30,-26,1030,1096,0,"#9bd6b0",-18);
   box(world,-8,-8,986,1060,3,"#eef8f1");
-  box(world,253,405,492,310,5,"#fff1c9");
+  // 走道（藍綠色地板）：診療區四周、往檢查室、五官科下方
+  const WALK="#a5dcea";
+  [[253,380,492,338],[253,297,719,73],[745,370,20,250]].forEach(c=>box(world,c[0],c[1],c[2],c[3],6,WALK,3));
   box(world,28,152,225,808,5,"#ffdcbf");
   const rg=el("g",{filter:"url(#drop)"},world);
   sorted().forEach(r=>{
+    if(r.flat)return;                      // 入口、除污區不佔面積，只用標籤標示
     const g=el("g",{class:"room","data-id":r.id},rg);
     box(g,r.x,r.y,r.w,r.h,ZH(r.z),r.c,r.z0!=null?ZH(r.z0):5);
     if(r.fr){const [fx,fy,fw,fh]=r.fr,z=ZH(r.z),col=r.frc||PURPLE;
@@ -243,12 +396,14 @@ function render(){
     g.addEventListener("mouseleave",()=>hov(r.id,0));
   });
   // 地板文字
-  {const [x,y]=P(185,372,5);["急診","大廳"].forEach((s,k)=>el("text",{x,y:y+k*30,"font-size":27,class:"t",style:"fill:#d9692f"},labels,s));}
+  {const k2=Math.min(FK,1.3),[x,y]=P(185,372,5);["急診","大廳"].forEach((s,k)=>el("text",{x,y:y+k*30*k2,"font-size":27*k2,class:"t",style:"fill:#d9692f"},labels,s));}
+  if(!(NARROW&&!(RT&&RT.pts.length>1)))[[610,408],[500,703],[440,330],[850,326]].forEach(c=>{const [x,y]=P(c[0],c[1],6);
+    el("text",{x,y:y+4,"font-size":12*Math.min(FK,1.3),class:"t",style:"fill:#2a8aa0"},labels,"走道")});
   R.forEach(mkLabel);
-  S.forEach(s=>{
-    const [x,y]=P(s.f[0],s.f[1],ZH(s.zt)+40);
+  if(!RT)S.forEach(s=>{     // 顯示路線時先把 1～8 編號收起來，避免跟路線、「到了」疊在一起
+    const [x,y]=P(s.f[0],s.f[1],ZH(s.zt)+40*FK);
     const col=s.back?'#2bb3a3':'#ff7a45';
-    const g=el("g",{class:"pin","data-n":s.n,transform:`translate(${x.toFixed(1)},${y.toFixed(1)})`},pinsG,
+    const g=el("g",{class:"pin","data-n":s.n,transform:`translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${FK})`},pinsG,
       `<g class="bob"><path d="M-7 12 L0 26 L7 12Z" fill="${col}"/><circle r="17" fill="${col}"/><text>${s.n}</text></g>`);
     g.addEventListener("click",()=>selStep(s));
   });
@@ -258,18 +413,29 @@ function mkLabel(r){
   if(r.nolabel&&!r.i)return;
   const [cx,cy]=P(r.x+r.w/2,r.y+r.h/2,ZH(r.z));
   const g=el("g",{class:"lbl","data-id":r.id},labels);
-  const fs=r.fs||14;
+  const overview=NARROW&&!(RT&&RT.pts.length>1);                  // 手機總覽：字放大，太小的次要標籤先不顯示
+  if(overview&&(r.fs||14)<=12&&!r.sub)return;
+  const fs=(r.fs||14)*(r.sub?Math.min(FK,1.3):FK);
+  if(r.flat){                                        // 標籤牌：不畫方塊
+    const tx=(r.i?r.i+" ":"")+r.t,w=(r.t.length+(r.i?1.6:0))*fs+18,h=fs*1.75;
+    g.setAttribute("style","pointer-events:auto;cursor:pointer");
+    el("rect",{x:cx-w/2,y:cy-h/2,width:w,height:h,rx:h/2,fill:r.c,stroke:shade(r.c,.6),"stroke-width":2},g);
+    el("text",{x:cx,y:cy+fs*.36,"font-size":fs,"font-weight":800,"text-anchor":"middle",fill:"#35464e"},g,tx);
+    g.addEventListener("click",()=>selRoom(r));
+    return;}
   if(r.sub){
+    const k2=Math.min(FK,1.3);
     el("text",{x:cx,y:cy+fs*0.30,"font-size":fs,class:"t",style:"fill:"+shade(r.c,.55)},g,r.t);
-    el("text",{x:cx,y:cy+fs*0.30+20,"font-size":14,class:"t"},g,r.tag);
-    const [qx,qy]=P(r.fr[0]+r.fr[2]/2,r.fr[1]+r.fr[3]/2,ZH(r.z));
-    el("text",{x:qx,y:qy+4,"font-size":11,class:"t",style:"fill:"+PURPLE},g,"看診區");
+    el("text",{x:cx,y:cy+fs*0.30+20*k2,"font-size":14*k2,class:"t"},g,r.tag);
+    if(!overview){const [qx,qy]=P(r.fr[0]+r.fr[2]/2,r.fr[1]+r.fr[3]/2,ZH(r.z));
+      el("text",{x:qx,y:qy+4,"font-size":11*k2,class:"t",style:"fill:"+PURPLE},g,"看診區");}
     return;}
   if(r.v){
     const chars=[...r.t];const step=fs+2;
     let y=cy-(chars.length*step)/2+step*.6+(r.i?8:0);
     if(r.i)el("text",{x:cx,y:y-step-2,"font-size":fs+5,class:"ic"},g,r.i);
     chars.forEach((c,k)=>el("text",{x:cx,y:y+k*step,"font-size":fs,class:"t"},g,c));
+    if(r.note)el("text",{x:cx,y:y+chars.length*step+2,"font-size":11*Math.min(FK,1.3),class:"t",style:"fill:#b26a00"},g,r.note);
     return;}
   const span=(Math.abs(r.w*cA)+Math.abs(r.h*sA))*S_;
   const maxC=Math.max(4,Math.floor(span/fs));
@@ -281,9 +447,9 @@ function mkLabel(r){
   lines.forEach((t,k)=>el("text",{x:cx,y:y+k*lh+(r.i&&r.t&&lines.length>1?lh*.5:0),"font-size":fs,class:"t",style:r.lc?"fill:"+r.lc:""},g,t));
 }
 function drawRoute(){
-  routeG.innerHTML="";
-  if(!st.zone)return;
-  const sp=zonePts(st.zone).map(p=>P(p[0],p[1],7));
+  routeG.innerHTML="";topG.innerHTML="";
+  if(!RT)return;
+  const sp=RT.pts.map(p=>P(p[0],p[1],7));
   const d="M"+sp.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" L");
   el("path",{d,fill:"none",stroke:"#fff","stroke-width":17,"stroke-linecap":"round","stroke-linejoin":"round",opacity:.95},routeG);
   el("path",{d,fill:"none",stroke:"#ff7a45","stroke-width":10,"stroke-linecap":"round","stroke-linejoin":"round"},routeG);
@@ -297,9 +463,24 @@ function drawRoute(){
       next+=32;}
     acc+=L2;
   }
-  const zr=byId[destId()];const [tx,ty]=P(zr.x+zr.w/2,zr.y+zr.h/2,ZH(zr.z)+52);
-  el("g",{transform:`translate(${tx.toFixed(1)},${ty.toFixed(1)})`},routeG,
-    `<g class="bob fast"><path d="M-8 12 L0 28 L8 12Z" fill="#e8523a"/><circle r="19" fill="#e8523a" stroke="#fff" stroke-width="3"/><text text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="800" fill="#fff">到了</text></g>`);
+  // 「到了」標記：尖端指在目的地最靠後的角落，不蓋住目的地自己的名字
+  // 中途停靠點（檢傷、掛號、候診、結帳）
+  RT.stops.forEach(s=>{const [x,y]=P(s.p[0],s.p[1],7),w=s.t.length*14+18;
+    el("g",{transform:`translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${FK})`},routeG,
+      `<circle r="9" fill="#fff" stroke="#ff7a45" stroke-width="4"/><rect x="15" y="-11" width="${w}" height="22" rx="11" fill="#2bb3a3" stroke="#fff" stroke-width="2"/><text x="${15+w/2}" y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${s.t}</text>`)});
+  // 出發點與「到了」：畫在最上層，不會被房間名稱蓋住；「到了」的尖端指在路線終點
+  const first=RT.pts[0],last=RT.pts[RT.pts.length-1];
+  // 牌子上直接寫地點名稱（出發：候診區／到了：X光室），就算壓到地圖上的字也看得出是哪裡
+  const pw=s=>s.length*13+22;
+  const [sx,sy]=P(first[0],first[1],7),[ex,ey]=P(last[0],last[1],RT.tipZ!=null?RT.tipZ:7);
+  const short=Math.hypot(ex-sx,ey-sy)<70*FK;                       // 路線很短時不放出發牌，免得兩塊牌子疊在一起
+  if(RT.pts.length>1&&!short&&!RT.stops.some(s=>s.p===first)){
+    const st1="出發："+RT.from,w=pw(st1);
+    el("g",{transform:`translate(${sx.toFixed(1)},${sy.toFixed(1)}) scale(${FK})`},topG,
+      `<circle r="9" fill="#1e88e5" stroke="#fff" stroke-width="3"/><rect x="${-w/2}" y="14" width="${w}" height="22" rx="11" fill="#1e88e5" stroke="#fff" stroke-width="2"/><text x="0" y="30" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${st1}</text>`);}
+  const mk=RT.pts.length>1?"到了："+RT.to:RT.to,mw=pw(mk);
+  el("g",{transform:`translate(${ex.toFixed(1)},${(ey-30*FK).toFixed(1)}) scale(${FK})`},topG,
+    `<g class="bob fast"><path d="M-7 12 L0 28 L7 12Z" fill="#e8523a"/><rect x="${-mw/2}" y="-12" width="${mw}" height="26" rx="13" fill="#e8523a" stroke="#fff" stroke-width="3"/><text x="0" y="6" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${mk}</text></g>`);
 }
 function hov(id,on){document.querySelectorAll(`[data-id="${id}"]`).forEach(e=>e.classList.toggle("hov",!!on))}
 function applyState(){
@@ -308,65 +489,223 @@ function applyState(){
     document.querySelector(`.steps li[data-n="${st.step}"]`).classList.add("on");}
   if(st.room)document.querySelectorAll(`[data-id="${st.room}"]`).forEach(e=>e.classList.add("sel"));
   if(st.zone)document.querySelector(`.zb[data-z="${st.zone}"]`).classList.add("on");
+  if(st.mode)document.querySelector(`.mb[data-m="${st.mode}"]`).classList.add("on");
+  if(st.next)document.querySelector(`.nb[data-n="${st.next}"]`).classList.add("on");
+  if(st.org)document.querySelector(`.ob[data-o="${st.org}"]`).classList.add("on");
+  if(st.unk)$(GO[st.mode]?"wcUnk":"zUnk").classList.add("on");
 }
-function show(t,d){$("dt").textContent=t;$("detail").innerHTML=d}
-function selStep(s){st.step=s.n;st.room=s.room||(st.zone?"z"+st.zone:null);applyState();show(`第 ${s.n} 站｜${s.t}`,s.d)}
+function show(t,d){$("dt").textContent=t;$("detail").innerHTML=d;$("info").style.display=""}
+// 按了地圖以外的按鈕後，把畫面帶回地圖，才看得到變化
+function toMap(){const r=document.querySelector(".mapwrap").getBoundingClientRect();
+  if(r.top<-20||r.top>window.innerHeight*0.45)window.scrollTo({top:window.scrollY+r.top-8,behavior:"smooth"})}
+function selStep(s){st.step=s.n;st.room=s.room||null;applyState();show(`第 ${s.n} 站｜${s.t}`,s.d)}
 function selRoom(r){
-  if(r.sub){showZone(r.t);return}
+  if(GO[st.mode])return;                    // 找廁所／去留觀區時，點地圖是在選「你現在的位置」
+  if(r.sub){pickZone(r.t);return}
+  if(r.id==="peds"||r.id==="pedsclinic"){pickZone("P");return}
   const s=S.find(s=>s.room===r.id);
-  if(s&&!st.zone){selStep(s);return}
+  if(s&&!RT){selStep(s);return}
   st.step=null;st.room=r.id;applyState();
-  show(r.t||"空間",r.d||"此區域不在一般就診動線上。");
+  show(r.t||r.nm||"其他區域",r.d||"此區域不在一般就診動線上。");
 }
-function showZone(L){
-  st.zone=L;st.next=null;routeView();}
-function setNext(n){st.next=n;routeView();}
-function routeView(){
-  const L=st.zone,Z=ZINFO[L];st.step=null;st.room=destId();guideT0=performance.now();
-  drawRoute();applyState();
-  const t=$("routeTxt");t.style.setProperty("--zc",Z.c);t.style.display="block";
-  const nextBar=`<div class="nextBar"><b>看完診後，醫師請你去：</b>
-    <button class="nb ${st.next==='inj'?'on':''}" onclick="setNext('inj')">💉 抽血／打針</button>
-    <button class="nb ${st.next==='xray'?'on':''}" onclick="setNext('xray')">🩻 照 X 光</button>
-    ${st.next?`<button class="nb" onclick="setNext(null)">↩ 看回來程路線</button>`:""}</div>`;
-  const list=(title,arr)=>`<b>${title}</b><ol>`+arr.map((s,i)=>`<li><span class="n">${i+1}</span><span>${s}</span></li>`).join("")+"</ol>";
-  if(st.next==="inj"){
-    const pair=(L==="A"||L==="B")?"A 區與 B 區":"D 區與 E 區";guideT0=performance.now();
-    t.innerHTML=list(`從 ${Z.name} 去抽血／打針，這樣走：`,[
+/* ---------- 狀況選擇 → 分段路線 ---------- */
+function pickOrg(o,guess){st.org=o;st.guess=!!guess;st.unk=false;refresh();toMap()}
+// 還需要使用者在上面選位置／選區的狀況，先不要把畫面捲走
+function setMode(m){st.mode=m;st.unk=false;st.org=null;st.guess=false;if(m!=="next")st.next=null;refresh();
+  if(RT&&RT.pts.length>1&&!(m==="pay"&&!st.zone))toMap()}
+function pickZone(L){st.zone=L;st.unk=false;if(!st.mode||st.mode==="arrive")st.mode="zone";if(L==="P"&&st.next==="inj")st.next=null;refresh();if(RT)toMap()}
+function setNext(n){st.next=n;st.mode="next";refresh();if(RT)toMap()}
+function clearRoute(){st.mode=null;st.zone=null;st.next=null;st.unk=false;st.org=null;refresh();selStep(S[0])}
+const PAYNAME="<b>急診批價</b>（掛號・結帳櫃台）";
+// A 區往裡面走時先繞回急診大廳，不經過其他區
+const A_OUT=[
+  "從 <b>A 區</b>的看診區走回旁邊的走道，<b>右轉</b>（往急診大廳的方向），直走到底。",
+  "<b>右轉</b>沿 A 區外側走一小段，再<b>左轉</b>走進<b>急診大廳</b>。",
+  "進大廳後<b>右轉</b>，往裡面（背對急診入口）走，會經過右手邊的<b>保護室</b>。"];
+function routeText(){
+  const L=st.zone,Z=L&&ZINFO[L],m=st.mode,name=Z?Z.name:"";
+  const AB=L&&isAB(L);
+  if(GO[m]){
+    const o=st.org,G=GO[m],T=m==="wc"?"找廁所":"去留觀區";
+    if(!o&&st.unk)return {title:T,info:`紅色標記是${G.n}的位置。不知道自己在哪裡沒關係，請直接問身邊的護理人員或志工。`,
+      head:"不知道自己在哪裡沒關係：",steps:[
+      "看看附近牆上或床邊的區域標示（A／B／D／E），或直接<b>問身邊的護理人員或志工</b>。",
+      `知道位置後，回來在上面選一個，地圖會畫出走到${G.n}的路線。`,
+      `${G.n}在地圖上<b>紅色標記</b>的位置，緊鄰<b>五官科診療區前面的走道</b>，${m==="wc"?"過了電梯再往前一小段":"在 X光室入口的斜對面"}。`]};
+    if(!o)return {title:T,info:`紅色標記是${G.n}的位置。請<b>點地圖上你現在的位置</b>，或在上面選你在哪裡，地圖會畫出路線。`,
+      head:`${G.n}在紅色標記的位置。你現在在哪裡？`,steps:[
+      "直接<b>點地圖上你現在所在的位置</b>，或在上面的按鈕選一個。",
+      `選好後，地圖會畫出從那裡走到${G.n}的路線。`]};
+    const head=`從 ${ORG[o].n} 去${G.n}${st.guess?"（依你點的位置判斷，不對請在上面重選）":""}：`,I=(st.guess?`依你點的位置，把你當作在<b>「${ORG[o].n}」</b>附近。不對的話，請在上面的按鈕重新選。<br>`:"")+"請跟著地圖上的橘色箭頭路線走；地圖下方有一步一步的文字說明。";
+    const obs=m==="obs";
+    // 目的地都在五官科前走道的同一側：往裡面走時在左手邊，往大廳方向走時在右手邊
+    const side=s=>`<span class="hl">📍 <b>${s}</b>緊鄰走道的就是<b>${G.n}</b>${G.hint}。${obs?"到了請依護理人員的指示。":""}</span>`;
+    const far=obs?"<b>經過電梯和廁所</b>，一直走到 <b>X光室入口</b>附近。":"<b>經過電梯</b>之後再往前一小段。";
+    const pass="沿走道<b>直走</b>，"+far;
+    const turn2=G.x>755?"右轉":"左轉",side2=G.x>755?"左手邊":"右手邊";          // 從牆最後面的門出來
+    const turnX=G.x>815?"右轉":"左轉",sideX=G.x>815?"左手邊":"右手邊";          // 從 X光室入口出來
+    if(o==="xray")return {title:T,info:I,head,steps:[`從 X光室的入口出來<b>${turnX}</b>，沿走道往前走一小段。`,side(sideX)]};
+    if(o==="P")return {title:T,info:I,head,steps:["從兒科診療區<b>朝急診入口的方向</b>往回走。",
+      "<b>左手邊</b>五官科診療區前面的走道（藍綠色地板）<b>左轉</b>。",pass,side("左手邊")]};
+    if(o==="A")return {title:T,info:I,head,steps:A_OUT.concat([
+      "過了保護室，<b>右轉</b>進入五官科診療區前面的走道（藍綠色地板）。",pass,side("左手邊")])};
+    if(o==="B")return {title:T,info:I,head,steps:[`從 <b>${o} 區</b>的看診區走回旁邊的走道，<b>左轉</b>（往手術室的方向，遠離急診大廳）。`,
+      "直走到底<b>左轉</b>，沿 B 區外側往前，<b>右手邊</b>依序經過手術室、X光室。",
+      `繼續直走穿過<b>門</b>，出門後<b>${turn2}</b>，沿五官科前面的走道走一小段。`,side(side2)]};
+    if(o==="D")return {title:T,info:I,head,steps:[
+      "從 <b>D 區</b>的看診區走回旁邊的走道，<b>左轉</b>（往急診大廳的方向），直走到底回到<b>急診大廳</b>。",
+      "到大廳後<b>右轉</b>，往裡面（背對急診入口）走，馬上會經過右手邊的<b>保護室</b>。",
+      "過了保護室，<b>右轉</b>進入五官科診療區前面的走道（藍綠色地板）。",pass,side("左手邊")]};
+    if(o==="E")return {title:T,info:I,head,steps:[
+      "從 <b>E 區</b>的看診區走回旁邊的走道，<b>左轉</b>（往急診大廳的方向）走一小段。",
+      "走到<b>注射區的對面</b>，<b>右手邊</b>有一個<b>門</b>，<b>右轉</b>穿過門到電梯前面。",
+      "出門後<b>右轉</b>，沿走道往前，"+far,side("左手邊")]};
+    if(o==="ent")return {title:T,info:I,head,steps:["從五官科診療區出來到前面的走道（藍綠色地板），面向走道<b>左轉</b>。",pass,side("左手邊")]};
+    if(o==="elev")return {title:T,info:I,head,steps:["從電梯出來，面向前面的走道（藍綠色地板）<b>左轉</b>。",
+      obs?"沿走道<b>直走</b>，<b>經過廁所</b>，一直走到 <b>X光室入口</b>附近。":"沿走道往前走一小段。",side("左手邊")]};
+    if(o==="obsO")return {title:T,info:I,head,steps:["從留觀區出來到走道（藍綠色地板），面向走道<b>右轉</b>（往急診大廳的方向）。",
+      "沿走道往前走，會經過左手邊的 <b>X光室入口</b>。",side("右手邊")]};
+    const into="進入五官科診療區前面的走道（藍綠色地板）。";
+    const s1=o==="wait"?"從候診區起身，朝急診入口的方向走兩步，在<b>左手邊</b>藍綠色地板的走道<b>左轉</b>。"
+      :o==="door"?"從急診入口進來<b>直走</b>到檢傷站前，從檢傷站<b>左邊</b>繞過去，沿大廳繼續往前走；<b>經過右手邊的保護室之後右轉</b>，"+into
+      :o==="triage"?"從檢傷站<b>左邊</b>繞過去，背對急診入口沿大廳往前走；<b>經過右手邊的保護室之後右轉</b>，"+into
+      :"從批價櫃台背對急診入口、沿大廳往前走；<b>經過右手邊的保護室之後右轉</b>，"+into;
+    return {title:T,info:I,head,steps:[s1,pass,side("左手邊")]};
+  }
+  if(m==="arrive")return {title:"剛到急診，先這樣走",head:"剛到急診，先這樣走：",steps:[
+    "從急診入口進門後<b>直走</b>，正前方就是<b>檢傷站</b>。護理師會量血壓、體溫，問你哪裡不舒服，判斷嚴重程度（這就是「檢傷」）。",
+    `檢傷完，從檢傷站<b>左邊</b>繞過去再往前走，<b>左手邊</b>的櫃台就是${PAYNAME}，在這裡掛號。`,
+    "掛完號<b>繼續往前直走</b>，<b>左手邊</b>的座位區就是<b>候診區</b>，坐著等叫號。",
+    `<span class="hl">📍 聽到叫號、護理師告訴你去哪一區後，按上面的「護理師說我去某一區」，地圖會接著帶你走。</span>`]};
+  if(m==="zone"&&L){
+    const tail=[`<span class="hl">📍 抵達 ${name}，<b>紫色框</b>是看診區，由醫師看診。</span>`,
+      "醫師請你去打針或照 X 光時，按上面的「醫師叫我去打針、照 X 光」；看完了按「看完了，要結帳離開」。"];
+    if(L==="P")return {title:name,head:`去 ${name}，從候診區出發：`,steps:[
+      "從<b>候診區</b>起身，<b>背對急診入口、繼續往裡面走</b>到底。",
+      `<span class="hl">📍 正前方就是<b>兒科診療區</b>，小兒急診（P區）在它的<b>右手邊</b>，依護理人員指示看診。</span>`,
+      "醫師請小朋友去照 X 光時，按上面的「醫師叫我去打針、照 X 光」；看完了按「看完了，要結帳離開」。"]};
+    if(AB)return {title:name,head:`去 ${name}，從候診區出發：`,steps:[
+      "從<b>候診區</b>起身，先往大廳中間走幾步，再<b>朝急診入口的方向往回走</b>。",
+      "經過保護室和它旁邊的走道<b>先不要轉</b>，繼續往前，走到<b>快到檢傷站</b>的地方<b>左轉</b>。",
+      "左轉後馬上<b>右轉</b>，沿著 A 區的外側走到底，再<b>左轉</b>進入走道（藍綠色地板）。",
+      L==="A"?"走道<b>左手邊第一區</b>就是 <b>A 區</b>。":"沿走道直走，<b>經過 A 區</b>，左手邊<b>第二區</b>就是 <b>B 區</b>。"].concat(tail)};
+    return {title:name,head:`去 ${name}，從候診區出發：`,steps:[
+      "從<b>候診區</b>起身，先往大廳中間走幾步，再<b>朝急診入口的方向往回走</b>一小段。",
+      "<b>過了保護室</b>之後，在<b>左手邊</b>的走道（藍綠色地板）<b>左轉</b>。",
+      L==="D"?"走道<b>右手邊第一區</b>就是 <b>D 區</b>。":"沿走道直走，<b>經過 D 區</b>，右手邊<b>第二區</b>就是 <b>E 區</b>。"].concat(tail)};
+  }
+  if(m==="next"&&L&&st.next==="inj"&&L!=="P"){
+    const pair=AB?"A 區與 B 區":"D 區與 E 區";
+    return {title:"注射區",info:byId[injOf(L)].d,head:`從 ${name} 去抽血／打針：`,steps:[
       `看完診後，留在 <b>${L} 區</b>內，往<b>${pair}的交界處</b>走。`,
       `交界處的<b>紅色框</b>就是<b>注射區</b>，不需要走出 ${L} 區。`,
       `<span class="hl">📍 抵達注射區，把單子交給護理人員，等候抽血或打針。</span>`,
-      `完成後依護理人員指示，回 <b>${L} 區</b>等候結果，或到<b>急診批價</b>結帳。`])+nextBar;
-    show("注射區",byId[injOf(L)].d);return;}
-  if(st.next==="xray"){
-    t.innerHTML=list(`從 ${Z.name} 去照 X 光，這樣走：`,[
-      `看完診後，從 <b>${L} 區</b>的看診區走回旁邊的<b>走道</b>（${isAB(L)?"A、B 區與急救區之間":"保護室與 D、E 區之間"}）。`,
-      `沿走道往<b>檢查區</b>方向直走到底，走出診療區。`,
-      `轉進檢查室前的走道，往前就是 <b>X光室</b>。`,
-      `<span class="hl">📍 抵達 X光室，依現場人員指示報到、檢查（低劑量快速掃描室就在隔壁）。</span>`,
-      `檢查完成後，沿原路回 <b>${L} 區</b>，等醫師說明結果。`])+nextBar;
-    show("X光室",byId.xray.d);return;}
-  const steps=[
-   "從<b>急診入口</b>進入<b>急診大廳</b>，往前走到<b>檢傷站</b>，由護理人員評估。",
-   "在<b>急診大廳</b>的<b>急診批價</b>櫃台完成掛號。",
-   "到大廳的<b>候診區</b>，坐著等候叫號。",
-   "被叫到後，從<b>急診大廳</b>往<b>診療區</b>走。",
-   Z.go,
-   `<span class="hl">📍 抵達 ${Z.name}，由醫師看診。</span>`,
-   "若醫師請你去<b>抽血／打針</b>或<b>照 X 光</b>，按下方按鈕，地圖會接著帶你過去。",
-   "處置完成後，回<b>急診批價</b>結帳，再從<b>急診入口</b>離開。"
-  ];
-  t.innerHTML=list(`被分到 ${Z.name}，這樣走：`,steps)+nextBar;
-  show(Z.name,"請跟著地圖上的橘色箭頭路線，與下方的文字指引前往。");
+      `完成後依護理人員指示，回 <b>${L} 區</b>等候結果；看完了按上面的「看完了，要結帳離開」。`]};
+  }
+  if(m==="next"&&L&&st.next==="xray"){
+    const back=`檢查完沿原路回${L==="P"?"<b>兒科診療區</b>":` <b>${L} 區</b>`}，等醫師說明結果。`;
+    if(L==="P")return {title:"X光室",info:byId.xray.d,head:`從 ${name} 去照 X 光：`,steps:[
+      "從<b>兒科診療區</b><b>朝急診入口的方向</b>往回走。",
+      "<b>左手邊</b>五官科診療區前面的走道（藍綠色地板）<b>左轉</b>。",
+      "沿走道<b>直走</b>，經過電梯後繼續往前。",
+      `<span class="hl">📍 <b>右手邊</b>就是 <b>X光室的入口</b>，直接在這裡報到、檢查。</span>`,back]};
+    if(L==="A")return {title:"X光室",info:byId.xray.d,head:`從 ${name} 去照 X 光：`,steps:A_OUT.concat([
+      "過了保護室，<b>右轉</b>進入五官科診療區前面的走道（藍綠色地板），<b>直走</b>，經過電梯和廁所。",
+      `<span class="hl">📍 再往前，<b>右手邊</b>就是 <b>X光室的入口</b>，直接在這裡報到、檢查。</span>`,back])};
+    if(AB)return {title:"X光室",info:byId.xray.d,head:`從 ${name} 去照 X 光：`,steps:[
+      `從 <b>${L} 區</b>的看診區走回旁邊的走道，<b>左轉</b>（往手術室的方向，遠離急診大廳）。`,
+      "沿走道<b>直走到底</b>，<b>左轉</b>，沿著 B 區外側往前走。",
+      "繼續往前走，<b>右手邊</b>會先經過<b>手術室</b>，不用進去。",
+      `<span class="hl">📍 過了手術室再往前，<b>右手邊</b>就是 <b>X光室的門</b>（靠 B 區這一側的門），直接在這裡報到、檢查。</span>`,back]};
+    if(L==="D")return {title:"X光室",info:byId.xray.d,head:`從 ${name} 去照 X 光：`,steps:[
+      "從 <b>D 區</b>的看診區走回旁邊的走道，<b>左轉</b>（往急診大廳的方向），直走到底回到<b>急診大廳</b>。",
+      "到大廳後<b>右轉</b>，往裡面（背對急診入口）走，馬上會經過右手邊的<b>保護室</b>。",
+      "過了保護室，<b>右轉</b>進入五官科診療區前面的走道（藍綠色地板），<b>直走</b>，經過電梯和廁所。",
+      `<span class="hl">📍 再往前，<b>右手邊</b>就是 <b>X光室的入口</b>，直接在這裡報到、檢查。</span>`,back]};
+    return {title:"X光室",info:byId.xray.d,head:`從 ${name} 去照 X 光：`,steps:[
+      "從 <b>E 區</b>的看診區走回旁邊的走道，<b>左轉</b>（往急診大廳的方向）走一小段。",
+      "走到<b>注射區的對面</b>，<b>右手邊</b>有一個<b>門</b>，<b>右轉</b>穿過門到電梯前面。",
+      "出門後<b>右轉</b>，沿五官科前面的走道直走，會經過左手邊的電梯和廁所。",
+      `<span class="hl">📍 再往前，<b>右手邊</b>就是 <b>X光室的入口</b>，直接在這裡報到、檢查。</span>`,back]};
+  }
+  if(m==="pay"){
+    const desk=`的櫃台就是${PAYNAME}，在這裡結帳繳費、領單據。`;
+    const exit="朝急診入口的方向走，<b>經過左手邊的檢傷站後左轉</b>，再<b>右轉</b>，就是<b>急診入口</b>（也是出口）。";
+    if(!L)return {title:"結帳離開",head:"結帳、離開：",steps:[
+      `${PAYNAME}在<b>急診大廳</b>：面向急診入口時，在<b>右手邊</b>、檢傷站再往裡面一點。`,
+      `<span class="hl">📍 在櫃台結帳繳費、領單據。</span>`,
+      "結完帳"+exit,
+      st.unk?"不確定在哪一區沒關係：請身邊的護理人員指出<b>急診大廳</b>的方向，到了大廳再照上面的步驟走。"
+        :"在上面選你現在在哪一區，地圖可以從那一區開始帶路。"]};
+    if(L==="P")return {title:"結帳離開",head:`從 ${name} 去結帳、離開：`,steps:[
+      "從<b>兒科診療區</b><b>朝急診入口的方向</b>直走，經過候診區。",
+      `<span class="hl">📍 <b>右手邊</b>${desk}</span>`,
+      "結完帳繼續"+exit]};
+    if(AB)return {title:"結帳離開",head:`從 ${name} 去結帳、離開：`,steps:[
+      `從 <b>${L} 區</b>的看診區走回旁邊的走道，<b>右轉</b>（往急診大廳的方向），直走到底。`,
+      "<b>右轉</b>沿 A 區外側走一小段，再<b>左轉</b>走進<b>急診大廳</b>。",
+      `<span class="hl">📍 <b>正前方</b>（大廳另一側）${desk}</span>`,
+      "結完帳後<b>左轉</b>，"+exit]};
+    return {title:"結帳離開",head:`從 ${name} 去結帳、離開：`,steps:[
+      `從 <b>${L} 區</b>的看診區走回旁邊的走道，<b>左轉</b>（往急診大廳的方向），直走到底回到<b>急診大廳</b>。`,
+      "到大廳後<b>左轉</b>，朝急診入口的方向走。",
+      `<span class="hl">📍 <b>右手邊</b>${desk}</span>`,
+      "結完帳繼續"+exit]};
+  }
+  return null;
 }
-function clearRoute(){st.zone=null;st.next=null;const t=$("routeTxt");t.style.display="none";t.innerHTML="";
-  drawRoute();selStep(S[0]);}
+function refresh(){
+  const m=st.mode,L=st.zone;
+  $("zoneRow").style.display=(m==="zone"||m==="next"||m==="pay")?"":"none";
+  const cur=L?`（目前選：${L==="P"?"P 區 小兒急診":L+" 區"}）`:"";
+  $("zoneQ").textContent=(m==="next"?"你現在在哪一區看診？":m==="pay"?"你現在在哪一區？":"護理師說你去哪一區？")+cur;
+  $("zUnk").style.display=(m==="next"||m==="pay")?"":"none";
+  $("nextRow").style.display=m==="next"?"":"none";
+  document.querySelector('.nb[data-n="inj"]').style.display=L==="P"?"none":"";
+  $("zclr").style.display=m?"":"none";
+  $("wcRow").style.display=GO[m]?"":"none";
+  document.querySelector('.ob[data-o="obsO"]').style.display=m==="obs"?"none":"";
+  // 找廁所時切成鳥瞰圖，方便點選自己的位置；離開時回到立體視角
+  const near=a=>ang+(((a-ang)%360+540)%360-180);
+  if(GO[m]&&!st.top){st.top=true;KT=0.9;target=near(0)}
+  else if(!GO[m]&&st.top){st.top=false;KT=0.58;target=near(DEF_ANG)}
+  RT=curRoute();st.step=null;st.room=RT?RT.dest:null;guideT0=performance.now();dirty=true;
+  const card=$("routeCard"),t=$("routeTxt"),X=routeText();
+  if(X){
+    card.style.display="";t.style.setProperty("--zc",L?ZINFO[L].c:"#ffd9c2");
+    t.innerHTML=`<b>${X.head}</b><ol>`+X.steps.map((s,i)=>`<li><span class="n">${i+1}</span><span>${s}</span></li>`).join("")+"</ol>";
+    show(X.title,X.info||"請跟著地圖上的橘色箭頭路線走；地圖下方有一步一步的文字說明。");
+  }else if(m){
+    const msg=st.unk?"不確定在哪一區沒關係：請看牆上或床邊的區域標示（A／B／D／E），或直接問身邊的護理人員，再回來選區。"
+      :m==="next"&&L?"請在上面選「抽血／打針」或「照 X 光」。":"請在上面選你在哪一區，地圖就會畫出路線。";
+    card.style.display="";t.innerHTML=`<b>${msg}</b>`;
+    show(m==="next"?"去打針、照 X 光":"選擇分區",msg);           // 換狀況時把舊的說明換掉
+  }else{card.style.display="none";t.innerHTML=""}
+  applyState();
+}
 /* ---------- 流程清單 ---------- */
 S.forEach(s=>{const li=document.createElement("li");li.dataset.n=s.n;
   li.innerHTML=`<span class="num ${s.back?'back':''}">${s.n}</span><span>${s.t}</span>`;
-  li.onclick=()=>selStep(s);$("steps").appendChild(li);});
-document.querySelectorAll(".zb[data-z]").forEach(b=>b.onclick=()=>showZone(b.dataset.z));
-$("zclr").onclick=clearRoute;
+  li.onclick=()=>{if(st.mode)clearRoute();selStep(s);toMap()};$("steps").appendChild(li);});
+document.querySelectorAll(".zb[data-z]").forEach(b=>b.onclick=()=>pickZone(b.dataset.z));
+document.querySelectorAll(".ob").forEach(b=>b.onclick=()=>pickOrg(b.dataset.o));
+// 找廁所：點地圖上的位置 → 換算成平面座標 → 找最近的出發點
+let justDragged=false;
+svg.addEventListener("click",e=>{
+  if(!GO[st.mode]||justDragged)return;
+  const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+  const q=pt.matrixTransform(svg.getScreenCTM().inverse()),w=unP(q.x,q.y);
+  const rc=GO[st.mode].rect;
+  if(w[0]>=rc[0]&&w[0]<=rc[0]+rc[2]&&w[1]>=rc[1]&&w[1]<=rc[1]+rc[3])return;       // 點到目的地本身
+  pickOrg(nearestOrg(w[0],w[1]),true);
+});
+$("zUnk").onclick=()=>{st.zone=null;st.unk=true;refresh();if(RT)toMap()};
+$("wcUnk").onclick=()=>{st.org=null;st.guess=false;st.unk=true;refresh()};
+document.querySelectorAll(".mb").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+document.querySelectorAll(".nb").forEach(b=>b.onclick=()=>setNext(b.dataset.n));
+$("zclr").onclick=()=>{clearRoute();toMap()};
+$("infoX").onclick=()=>{$("info").style.display="none"};
+window.addEventListener("resize",()=>{dirty=true});
 /* ---------- 小人（依地圖座標走動，可隨旋轉更新） ---------- */
 const routes={
  patient:[[205,1025],[205,880],[205,792],[130,792],[130,620],[180,620],[180,322],[300,322],[740,322],[755,335],[755,410]],
@@ -379,23 +718,24 @@ const routes={
 function mkPath(a){const seg=[];let L=0;for(let i=1;i<a.length;i++){const l=Math.hypot(a[i][0]-a[i-1][0],a[i][1]-a[i-1][1]);seg.push(l);L+=l}return {a,seg,L}}
 function at(p,d){d=Math.max(0,Math.min(p.L,d));for(let i=0;i<p.seg.length;i++){if(d<=p.seg[i]||i===p.seg.length-1){const t=p.seg[i]?Math.min(1,d/p.seg[i]):0;
   return [p.a[i][0]+(p.a[i+1][0]-p.a[i][0])*t,p.a[i][1]+(p.a[i+1][1]-p.a[i][1])*t]}d-=p.seg[i]}}
-const walkers=[["patient","🚶",48,0],["patient","🧓",44,700],["nurse","👩‍⚕️",52,0],["nurse2","🧑‍⚕️",50,300],["upper","🧑‍⚕️",46,200],["lobby","🚶‍♂️",30,0],["hall","🧒",36,100]]
+const walkers=[]   // 走來走去的小人已移除，只保留選路線時的帶路小人
  .map(([k,e,sp,off])=>({p:mkPath(routes[k]),sp,off,
    g:el("g",{},walkersG,`<ellipse cx="0" cy="3" rx="11" ry="4" fill="#2b5d4a" opacity=".25"/><g class="wbob"><text text-anchor="middle" font-size="30">${e}</text></g>`)}));
-const guide=el("g",{style:"display:none"},walkersG,`<ellipse cx="0" cy="3" rx="12" ry="4" fill="#2b5d4a" opacity=".3"/><g class="wbob"><text text-anchor="middle" font-size="34">🚶</text>
-  <g transform="translate(0,-48)"><rect x="-34" y="-14" width="68" height="22" rx="11" fill="#fff" stroke="#ff7a45" stroke-width="2.5"/><text text-anchor="middle" y="2" font-size="13" font-weight="800" fill="#ff7a45">跟我走！</text></g></g>`);
+const guide=el("g",{style:"display:none"},walkersG,`<ellipse cx="0" cy="3" rx="12" ry="4" fill="#2b5d4a" opacity=".3"/><g class="wbob"><text text-anchor="middle" font-size="32">🚶</text></g>`);
 let guideT0=0,guideZone=null,guidePath=null,dirty=true;
 function frame(now){
   if(Math.abs(target-ang)>0.05){ang+=(target-ang)*0.22;dirty=true}else if(ang!==target){ang=target;dirty=true}
+  if(Math.abs(KT-K)>0.004){K+=(KT-K)*0.22;dirty=true}else if(K!==KT){K=KT;dirty=true}
   if(dirty){render();dirty=false}
   const t=now/1000;
   walkers.forEach(w=>{let d=(t*w.sp+w.off)%(2*w.p.L);if(d>w.p.L)d=2*w.p.L-d;const q=at(w.p,d);const s=P(q[0],q[1],6);
     w.g.setAttribute("transform",`translate(${s[0].toFixed(1)},${s[1].toFixed(1)})`)});
-  if(st.zone){
-    const gk=st.zone+"|"+st.next;
-    if(guideZone!==gk){guideZone=gk;guidePath=mkPath(zonePts(st.zone))}
-    const d=((now-guideT0)/1000*75)%(guidePath.L+90);const q=at(guidePath,d);const s=P(q[0],q[1],7);
-    guide.style.display=guidePath.L<100?"none":"";guide.setAttribute("transform",`translate(${s[0].toFixed(1)},${s[1].toFixed(1)})`);
+  if(RT){
+    const gk=RT.key;
+    if(guideZone!==gk){guideZone=gk;guidePath=mkPath(RT.pts)}
+    if(guidePath.L<100)guide.style.display="none";
+    else{const d=((now-guideT0)/1000*75)%(guidePath.L+90);const q=at(guidePath,d);const s=P(q[0],q[1],7);
+      guide.style.display="";guide.setAttribute("transform",`translate(${s[0].toFixed(1)},${s[1].toFixed(1)})`);}
   }else{guide.style.display="none";guideZone=null}
   requestAnimationFrame(frame);
 }
@@ -404,11 +744,11 @@ $("rotL").onclick=()=>{target+=30};
 $("rotR").onclick=()=>{target-=30};
 $("rot0").onclick=()=>{let d=((DEF_ANG-ang)%360+540)%360-180;target=ang+d};
 let drag=null;
-svg.addEventListener("pointerdown",e=>{if(e.pointerType==="touch"||e.button!==0)return;drag={x:e.clientX,a:ang,on:false,id:e.pointerId}});
+svg.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;drag={x:e.clientX,a:ang,on:false,id:e.pointerId}});
 window.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x;
   if(!drag.on&&Math.abs(dx)>5){drag.on=true;svg.classList.add("drag");try{svg.setPointerCapture(drag.id)}catch(_){}}
   if(drag.on){ang=target=drag.a-dx*0.35;dirty=true;e.preventDefault()}});
-window.addEventListener("pointerup",()=>{if(drag&&drag.on)svg.classList.remove("drag");drag=null});
+window.addEventListener("pointerup",()=>{if(drag&&drag.on){svg.classList.remove("drag");justDragged=true;setTimeout(()=>{justDragged=false},60)}drag=null});
 window.addEventListener("pointercancel",()=>{svg.classList.remove("drag");drag=null});
 svg.addEventListener("dragstart",e=>e.preventDefault());
 show(`第 1 站｜${S[0].t}`,S[0].d);
