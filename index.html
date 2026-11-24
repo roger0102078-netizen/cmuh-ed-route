@@ -7,13 +7,16 @@
 <style>
 :root{--bg:#dff3ec;--ink:#2b3a42;--card:#fff;--edge:#c3e2d4;}
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(#e9f8f2,#d3ede3);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif}
+body{margin:0;background:linear-gradient(#e9f8f2,#d3ede3);color:var(--ink);font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif}
 header{padding:16px 16px 4px;text-align:center}
-header h1{margin:0;font-size:24px}
-header p{margin:4px 0 0;font-size:13px;opacity:.7}
+header h1{margin:0;font-size:24px;display:flex;align-items:center;justify-content:center;gap:8px}
+header h1 svg{width:1.15em;height:1.15em;flex:none;cursor:default}
+header p{margin:4px 0 0;font-size:15px;color:#4a5d66}
 .main{max-width:1280px;margin:0 auto;padding:8px 14px 28px}
-.mapwrap{position:relative}
-.mapbox{background:#f7fffb;border-radius:26px;border:3px solid var(--edge);box-shadow:0 6px 0 var(--edge);overflow:hidden}
+.mapwrap{position:relative;display:flex;flex-direction:column}
+.mapbox{order:3}
+.mapwrap.go .info{position:relative;left:auto;bottom:auto;width:auto;max-width:none;margin-top:10px;order:4}
+.mapbox{background:linear-gradient(#eef9fc,#d9eef5);border-radius:26px;border:3px solid var(--edge);box-shadow:0 6px 0 var(--edge);overflow:hidden}
 svg{width:100%;height:auto;display:block;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-y}
 .info{position:absolute;left:14px;bottom:16px;width:340px;max-width:calc(100% - 28px);background:#fffffff5;border:3px solid var(--edge);border-radius:18px;padding:10px 14px 12px;z-index:2;box-shadow:0 4px 0 var(--edge)}
 .info h2{margin:0 26px 4px 0;font-size:16px}
@@ -22,36 +25,34 @@ svg.drag{cursor:grabbing}
 .rot{position:absolute;top:12px;right:12px;display:flex;gap:6px;align-items:center;z-index:2}
 .rot button{font:inherit;font-weight:800;font-size:14px;border:2px solid var(--edge);background:#fff;border-radius:12px;padding:6px 10px;cursor:pointer;box-shadow:0 3px 0 var(--edge)}
 .rot button:active{transform:translateY(2px);box-shadow:none}
-.rothint{position:absolute;left:14px;top:12px;font-size:12px;background:#ffffffcc;border-radius:10px;padding:4px 10px;opacity:.8;pointer-events:none;z-index:2}
+.rothint{position:absolute;left:14px;top:12px;font-size:13px;color:#4a5d66;background:#ffffffd9;border-radius:10px;padding:4px 10px;pointer-events:none;z-index:2}
 .panel{display:flex;gap:14px;margin-top:16px;align-items:stretch;flex-wrap:wrap}
 .card{background:var(--card);border-radius:20px;padding:14px;border:3px solid var(--edge);box-shadow:0 5px 0 var(--edge)}
 .stepsCard{flex:1 1 560px}
 .detailCard{flex:1 1 320px;min-height:120px}
 .card h2{margin:0 0 8px;font-size:17px}
-.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .steps li{display:flex;gap:8px;align-items:center;padding:7px 8px;border-radius:14px;cursor:pointer;font-size:14px;transition:.15s}
 .steps li:hover{background:#eefaf5}
 .steps li.on{background:#fff2c9}
-.num{flex:0 0 26px;height:26px;border-radius:50%;background:#ff8a5c;color:#fff;font-weight:700;display:grid;place-items:center;font-size:13px}
+.num{flex:0 0 26px;height:26px;border-radius:50%;background:#35464e;color:#fff;font-weight:700;display:grid;place-items:center;font-size:13px}
 .num.back{background:#2bb3a3}
 #detail{font-size:14px;line-height:1.65}
 #detail b{font-size:15px}
 .modeCard{margin-bottom:14px}
-.mbtns{display:grid;grid-template-columns:repeat(4,1fr) .6fr .6fr;gap:10px}
-.mb.mini{border-color:#b9c7ce;box-shadow:0 4px 0 #b9c7ce;justify-content:center}
-.mb.mini.on{background:#e3ecf0}
+.mbtns{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .ob{font:inherit;font-weight:800;font-size:14px;border:3px solid #9ec5f5;background:#fff;border-radius:14px;padding:7px 12px;cursor:pointer;box-shadow:0 3px 0 #9ec5f5}
 .ob.on{background:#d6e8ff;box-shadow:none;transform:translateY(2px)}
-.mb{font:inherit;font-weight:800;font-size:16px;text-align:left;border:3px solid #ffb38f;background:#fff;border-radius:16px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:2px;line-height:1.3;box-shadow:0 4px 0 #ffb38f;transition:.12s}
-.mb small{font-size:12px;font-weight:600;opacity:.65}
+.mb{font:inherit;font-weight:800;font-size:16px;text-align:left;border:3px solid #9fd0bb;background:#fff;border-radius:16px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:2px;line-height:1.3;box-shadow:0 4px 0 #9fd0bb;transition:.12s}
+.mb small{font-size:13px;font-weight:600;color:#5b6b73}
 .mb:hover{transform:translateY(-2px)}
-.mb.on{background:#ffe3d3;transform:translateY(2px);box-shadow:none}
+.mb.on{background:#ffe3d3;border-color:#ff9a6b;transform:translateY(2px);box-shadow:none}
 .subRow{margin-top:12px;padding-top:12px;border-top:2px dashed var(--edge);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-@media(max-width:699px){.mbtns{grid-template-columns:1fr 1fr}.mb{font-size:14px;padding:10px}.mb.mini{flex-direction:row}}
+@media(max-width:699px){.mbtns{grid-template-columns:1fr 1fr}.mb{font-size:14px;padding:10px}}
 .zoneBar{margin-top:16px}
 .zbtns{display:flex;gap:10px;flex-wrap:wrap}
 .zb{font:inherit;font-weight:800;font-size:16px;border:3px solid var(--c,#ccc);background:#fff;border-radius:16px;padding:8px 16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.25;box-shadow:0 4px 0 var(--c,#ccc);transition:.12s}
-.zb small{font-size:12px;font-weight:600;opacity:.7}
+.zb small{font-size:13px;font-weight:600;color:#5b6b73}
 .zb:hover{transform:translateY(-2px)}
 .zb.on{background:var(--c);transform:translateY(2px);box-shadow:none}
 .zb.clr{--c:#cfd8dc;font-size:14px;justify-content:center}
@@ -59,11 +60,11 @@ svg.drag{cursor:grabbing}
 #routeTxt ol{margin:6px 0 0;padding-left:0;list-style:none}
 #routeTxt li{display:flex;gap:10px;align-items:flex-start;padding:4px 0}
 #routeTxt .n{flex:0 0 26px;height:26px;border-radius:50%;background:var(--zc);color:#35464e;font-weight:800;display:grid;place-items:center;font-size:13px;margin-top:1px}
-#routeTxt .hl{background:#fff2c9;border-radius:12px;padding:6px 8px}
+#routeTxt .hl{display:block;background:#fff2c9;border-radius:12px;padding:8px 10px}
 .nextBar{margin-top:12px;padding-top:12px;border-top:2px dashed var(--edge);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .nb{font:inherit;font-weight:800;font-size:14px;border:3px solid #ff9ec4;background:#fff;border-radius:14px;padding:7px 14px;cursor:pointer;box-shadow:0 3px 0 #ff9ec4}
 .nb.on{background:#ffd3e4;box-shadow:none;transform:translateY(2px)}
-.tip{font-size:12px;opacity:.65;line-height:1.5;margin:12px 4px 0;text-align:center}
+.tip{font-size:13px;color:#5b6b73;line-height:1.5;margin:12px 4px 0;text-align:center}
 /* svg */
 .room,.lbl{transition:transform .18s}
 .room{cursor:pointer}
@@ -85,28 +86,40 @@ svg.drag{cursor:grabbing}
 /* 手機：提示在地圖上方、說明卡在地圖正下方、旋轉按鈕縮小 */
 @media(max-width:699px){
   .mapwrap{display:flex;flex-direction:column}
-  .rothint{position:static;order:1;margin:0 0 6px 4px;background:none;padding:0;font-size:13px}
-  .rot{position:static;order:2;justify-content:flex-start;margin:0 0 8px 2px;gap:6px}
-  .rot button{font-size:13px;padding:6px 10px;border-radius:10px}
+  .rothint{left:10px;top:10px;font-size:12px;padding:3px 9px}
+  .rot{top:8px;right:8px;gap:6px}
+  .rot button{width:40px;height:40px;padding:0;border-radius:50%;font-size:19px;line-height:1;display:grid;place-items:center}
+  .rot .rl{display:none}
   .mapbox{order:3}
   .info{position:relative;left:auto;bottom:auto;width:auto;max-width:none;margin-top:10px;order:4}
+  /* 第一屏壓矮一點，讓地圖早點出現 */
+  header{padding:10px 12px 2px}
+  header h1{font-size:20px}
+  .steps{grid-template-columns:1fr 1fr}
+  header p{font-size:13px;margin-top:2px}
+  .main{padding:6px 10px 24px}
+  .modeCard{padding:10px;margin-bottom:10px}
+  .modeCard h2{font-size:15px;margin-bottom:6px}
+  .mbtns{gap:7px}
+  .mb{padding:7px 10px;border-radius:14px;box-shadow:0 3px 0 #9fd0bb;gap:0}
+  .mb small{font-size:12px}
 }
 </style>
 </head>
 <body>
 <header>
-  <h1>🏥 中國附醫急診就診導覽</h1>
+  <h1><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="6" fill="#2bb3a3"/><path d="M12 6v12M6 12h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>中國附醫急診就診導覽</h1>
   <p>先按下面最符合您現在狀況的按鈕，地圖會一段一段帶您走；也可以點選地圖上的房間或編號看說明。</p>
 </header>
 <div class="main">
   <div class="card modeCard"><h2>👋 你現在的狀況是？按一個，地圖會帶你走</h2>
     <div class="mbtns">
       <button class="mb" data-m="arrive">🚪 剛到急診<small>還沒給護理師看過</small></button>
-      <button class="mb" data-m="zone">🧭 護理師說我去某一區<small>A／B／D／E／小兒</small></button>
-      <button class="mb" data-m="next">💉 醫師叫我去打針、照 X 光<small>看診後的檢查</small></button>
-      <button class="mb" data-m="pay">💰 看完了，要結帳離開<small>批價櫃台 → 出口</small></button>
-      <button class="mb mini" data-m="wc">🚻 找廁所</button>
-      <button class="mb mini" data-m="obs">🛏️ 去留觀區</button>
+      <button class="mb" data-m="zone">🧭 去看診區<small>護理師說我去某一區</small></button>
+      <button class="mb" data-m="next">💉 打針、照 X 光<small>醫師叫我去的檢查</small></button>
+      <button class="mb" data-m="pay">💰 結帳離開<small>看完了：櫃台 → 出口</small></button>
+      <button class="mb" data-m="wc">🚻 找廁所<small>帶我去最近的廁所</small></button>
+      <button class="mb" data-m="obs">🛏️ 去留觀區<small>醫師安排留下觀察</small></button>
     </div>
     <div class="subRow" id="zoneRow" style="display:none"><b id="zoneQ">護理師說你去哪一區？</b>
       <div class="zbtns">
@@ -145,12 +158,12 @@ svg.drag{cursor:grabbing}
     <div class="rothint">↔️ 左右拖曳地圖可旋轉</div>
     <div class="info" id="info"><button id="infoX" aria-label="關閉說明">✕</button><h2 id="dt">點選站點</h2><div id="detail">點地圖上的房間或編號，這裡會顯示說明。</div></div>
     <div class="rot">
-      <button id="rotL" title="把地圖向左旋轉">⟲ 地圖左旋</button>
-      <button id="rotR" title="把地圖向右旋轉">地圖右旋 ⟳</button>
-      <button id="rot0" title="地圖回到預設角度">地圖回正</button>
+      <button id="rotL" title="把地圖向左旋轉" aria-label="地圖左旋">⟲<span class="rl"> 地圖左旋</span></button>
+      <button id="rotR" title="把地圖向右旋轉" aria-label="地圖右旋"><span class="rl">地圖右旋 </span>⟳</button>
+      <button id="rot0" title="地圖回到預設角度" aria-label="地圖回正">⌂<span class="rl"> 地圖回正</span></button>
     </div>
     <div class="mapbox"><svg id="map" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg">
-      <defs><filter id="drop" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#2b5d4a" flood-opacity=".22"/></filter></defs>
+      <defs><filter id="soft" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur stdDeviation="12"/></filter><filter id="drop" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#2b5d4a" flood-opacity=".22"/></filter></defs>
       <g id="world"></g>
       <g id="routeG"></g>
       <g id="labels"></g>
@@ -169,7 +182,7 @@ svg.drag{cursor:grabbing}
 const NS="http://www.w3.org/2000/svg";
 /* ---------- 投影（可旋轉） ---------- */
 let K=0.58, KT=0.58;            // 俯視程度：0.58＝立體斜視，0.9＝鳥瞰
-const S_=0.76, OX=640, OY=392, CX=480, CY=505, DEF_ANG=28, HS=0.42;
+const S_=0.76, OX=640, OY=392, CX=480, CY=505, DEF_ANG=window.innerWidth<700?18:28, HS=0.42;   // 手機轉正一點，小島才放得大
 let ang=DEF_ANG, target=DEF_ANG, cA=1, sA=0;
 function setAng(a){cA=Math.cos(a*Math.PI/180);sA=Math.sin(a*Math.PI/180)}
 const P=(x,y,z=0)=>{const dx=x-CX,dy=y-CY;return [(dx*cA-dy*sA)*S_+OX,(dx*sA+dy*cA)*K*S_+OY-z]};
@@ -180,13 +193,25 @@ function shade(hex,f){const n=parseInt(hex.slice(1),16);const r=(n>>16)&255,g=(n
 const $=id=>document.getElementById(id);
 const svg=$("map"),world=$("world"),labels=$("labels"),pinsG=$("pins"),routeG=$("routeG"),walkersG=$("walkers"),topG=$("topG");
 function el(tag,attrs,parent,html){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(html!=null)e.innerHTML=html;parent.appendChild(e);return e}
-function box(parent,x,y,w,h,z,color,z0=0){
-  const c=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
-  const T=c.map(p=>P(p[0],p[1],z)),B=c.map(p=>P(p[0],p[1],z0));
-  const st=shade(color,.6);
-  const side=(i,j,f)=>el("polygon",{points:pts([T[i],T[j],B[j],B[i]]),fill:shade(color,f),stroke:st,"stroke-width":1.5,"stroke-linejoin":"round"},parent);
-  if(cA>0.001)side(3,2,.86); else if(cA<-0.001)side(0,1,.86);     // ±y 面
-  if(sA>0.001)side(1,2,.72); else if(sA<-0.001)side(0,3,.72);     // ±x 面
+// 圓角方塊的外框（平面座標，順時針）
+function outline(x,y,w,h,r){
+  if(r<=0.5)return [[x+w,y],[x+w,y+h],[x,y+h],[x,y]];
+  const o=[],N=3;
+  [[x+w-r,y+r,-90],[x+w-r,y+h-r,0],[x+r,y+h-r,90],[x+r,y+r,180]].forEach(c=>{
+    for(let k=0;k<=N;k++){const t=(c[2]+90*k/N)*Math.PI/180;o.push([c[0]+r*Math.cos(t),c[1]+r*Math.sin(t)])}});
+  return o;
+}
+// r＝圓角半徑，ins＝往內縮（讓相鄰方塊之間留一點縫）
+function box(parent,x,y,w,h,z,color,z0=0,r=0,ins=0){
+  ins=Math.min(ins,Math.min(w,h)*.15);x+=ins;y+=ins;w-=2*ins;h-=2*ins;r=Math.min(r,Math.min(w,h)/2-.5);
+  const o=outline(x,y,w,h,r),n=o.length,st=shade(color,.6);
+  const T=o.map(p=>P(p[0],p[1],z)),B=o.map(p=>P(p[0],p[1],z0)),vis=[];
+  for(let i=0;i<n;i++){const j=(i+1)%n,dx=o[j][0]-o[i][0],dy=o[j][1]-o[i][1],L=Math.hypot(dx,dy)||1,nx=dy/L,ny=-dx/L;
+    const v=nx*sA+ny*cA>0.001;vis.push(v);                 // 朝向觀看者的側面才畫
+    if(v){const f=shade(color,.72+.14*ny*ny);el("polygon",{points:pts([T[i],T[j],B[j],B[i]]),fill:f,stroke:f,"stroke-width":.8,"stroke-linejoin":"round"},parent)}}
+  let s0=-1;for(let i=0;i<n;i++)if(vis[i]&&!vis[(i-1+n)%n]){s0=i;break}
+  if(s0>=0){const e=[T[s0]];let i=s0;while(vis[i]){e.push(B[i]);i=(i+1)%n;if(i===s0)break}e.push(B[i],T[i]);
+    el("polyline",{points:pts(e),fill:"none",stroke:st,"stroke-width":1.5,"stroke-linejoin":"round","stroke-linecap":"round"},parent)}
   el("polygon",{points:pts(T),fill:color,stroke:st,"stroke-width":1.5,"stroke-linejoin":"round",class:"top"},parent);
 }
 /* ---------- 房間 ---------- */
@@ -357,7 +382,14 @@ let FK=1, NARROW=false;
 function destRect(){const zr=byId[RT.dest];return zr.sub?zr.fr:[zr.x,zr.y,zr.w,zr.h]}
 function fitView(){
   NARROW=window.innerWidth<700;
-  if(!NARROW){FK=1;svg.setAttribute("viewBox","0 0 1280 800");return}
+  if(!NARROW){FK=1;
+    // 鳥瞰時小島比較高：把視野放寬到剛好包住整座小島並置中，底座不會被切掉
+    const t=Math.max(0,Math.min(1,(K-0.58)/0.32));let v=[0,0,1280,800];
+    if(t>0){const q=[];[[-30,-26],[1000,-26],[1000,1070],[-30,1070]].forEach(c=>{q.push(P(c[0],c[1],-18));q.push(P(c[0],c[1],24))});
+      const a0=Math.min(...q.map(p=>p[0])),a1=Math.max(...q.map(p=>p[0])),b0=Math.min(...q.map(p=>p[1])),b1=Math.max(...q.map(p=>p[1]))+24;
+      const w=Math.max(a1-a0+70,(b1-b0+70)*1.6),h=w/1.6,f=[(a0+a1)/2-w/2,(b0+b1)/2-h/2,w,h];
+      v=v.map((d,i)=>d+(f[i]-d)*t);}
+    svg.setAttribute("viewBox",v.map(d=>d.toFixed(0)).join(" "));return}
   let ps=[],pad=24,top=30;
   if(RT&&RT.pts.length>1){            // 只有目的地標記、還沒選出發點時，維持顯示整張地圖
     ps=RT.pts.map(p=>P(p[0],p[1],7));
@@ -365,32 +397,36 @@ function fitView(){
     pad=70;top=95;FK=1.25;
   }else{
     [[-30,-26],[1000,-26],[1000,1070],[-30,1070]].forEach(c=>{ps.push(P(c[0],c[1],-18));ps.push(P(c[0],c[1],24))});
-    FK=1.6;
+    FK=1.8;pad=6;top=30;
   }
   let x0=Math.min(...ps.map(p=>p[0]))-pad,x1=Math.max(...ps.map(p=>p[0]))+pad,
       y0=Math.min(...ps.map(p=>p[1]))-top,y1=Math.max(...ps.map(p=>p[1]))+pad;
   let w=x1-x0,h=y1-y0;
   if(w<420){x0-=(420-w)/2;w=420}
-  const a=Math.max(0.72,Math.min(1.15,h/w));
+  const a=Math.max(RT&&RT.pts.length>1?0.72:0.5,Math.min(1.15,h/w));   // 總覽時地圖框剛好包住小島，不留上下空白
   if(h<w*a){y0-=(w*a-h)/2;h=w*a}else{const nw=h/a;x0-=(nw-w)/2;w=nw}
   svg.setAttribute("viewBox",`${x0.toFixed(0)} ${y0.toFixed(0)} ${w.toFixed(0)} ${h.toFixed(0)}`);
 }
 function render(){
   setAng(ang);RT=curRoute();fitView();
   world.innerHTML="";labels.innerHTML="";pinsG.innerHTML="";
-  box(world,-30,-26,1030,1096,0,"#9bd6b0",-18);
-  box(world,-8,-8,986,1060,3,"#eef8f1");
+  const ov=NARROW&&!(RT&&RT.pts.length>1),vb=svg.viewBox.baseVal,ck=vb.width/1280;
+  [[.07,.2,1],[.9,.2,.8],[.92,.84,1.15],[.1,.72,.7]].forEach(c=>el("g",{transform:`translate(${(vb.x+vb.width*c[0]).toFixed(0)},${(vb.y+vb.height*c[1]).toFixed(0)}) scale(${(ck*c[2]).toFixed(2)})`,opacity:.75},world,
+    '<ellipse cx="0" cy="0" rx="46" ry="15" fill="#fff"/><ellipse cx="-16" cy="-11" rx="20" ry="14" fill="#fff"/><ellipse cx="12" cy="-15" rx="24" ry="18" fill="#fff"/>'));
+  el("polygon",{points:pts(outline(-30,-26,1030,1096,36).map(q=>{const p=P(q[0],q[1],-18);return [p[0],p[1]+18]})),fill:"#2b5d4a",opacity:.25,filter:"url(#soft)"},world);
+  box(world,-30,-26,1030,1096,0,"#9bd6b0",-18,36);
+  box(world,-8,-8,986,1060,3,"#eef8f1",0,26);
   // 走道（藍綠色地板）：診療區四周、往檢查室、五官科下方
   const WALK="#a5dcea";
   [[253,380,492,338],[253,297,719,73],[745,370,20,250]].forEach(c=>box(world,c[0],c[1],c[2],c[3],6,WALK,3));
-  box(world,28,152,225,808,5,"#ffdcbf");
+  box(world,28,152,225,808,5,"#ffdcbf",0,10);
   const rg=el("g",{filter:"url(#drop)"},world);
   sorted().forEach(r=>{
     if(r.flat)return;                      // 入口、除污區不佔面積，只用標籤標示
     const g=el("g",{class:"room","data-id":r.id},rg);
-    box(g,r.x,r.y,r.w,r.h,ZH(r.z),r.c,r.z0!=null?ZH(r.z0):5);
+    box(g,r.x,r.y,r.w,r.h,ZH(r.z),r.c,r.z0!=null?ZH(r.z0):5,9,3);
     if(r.fr){const [fx,fy,fw,fh]=r.fr,z=ZH(r.z),col=r.frc||PURPLE;
-      el("polygon",{points:pts([P(fx,fy,z),P(fx+fw,fy,z),P(fx+fw,fy+fh,z),P(fx,fy+fh,z)]),fill:col,"fill-opacity":.12,stroke:col,"stroke-width":3.5,"stroke-linejoin":"round"},g);}
+      el("polygon",{points:pts(outline(fx+3,fy+3,fw-6,fh-6,r.sub?5:9).map(q=>P(q[0],q[1],z))),fill:col,"fill-opacity":ov?.8:.12,stroke:col,"stroke-width":3.5,"stroke-linejoin":"round"},g);}
     g.addEventListener("click",()=>selRoom(r));
     g.addEventListener("mouseenter",()=>hov(r.id,1));
     g.addEventListener("mouseleave",()=>hov(r.id,0));
@@ -398,12 +434,15 @@ function render(){
   // 地板文字
   {const k2=Math.min(FK,1.3),[x,y]=P(185,372,5);["急診","大廳"].forEach((s,k)=>el("text",{x,y:y+k*30*k2,"font-size":27*k2,class:"t",style:"fill:#d9692f"},labels,s));}
   if(!(NARROW&&!(RT&&RT.pts.length>1)))[[610,408],[500,703],[440,330],[850,326]].forEach(c=>{const [x,y]=P(c[0],c[1],6);
-    el("text",{x,y:y+4,"font-size":12*Math.min(FK,1.3),class:"t",style:"fill:#2a8aa0"},labels,"走道")});
+    const f=12*Math.min(FK,1.3),w=f*2+14,h=f*1.7;
+    el("rect",{x:x-w/2,y:y-h/2,width:w,height:h,rx:h/2,fill:"#ffffffd9"},labels);
+    el("text",{x,y:y+f*.36,"font-size":f,"font-weight":800,"text-anchor":"middle",fill:"#4a6b78"},labels,"走道")});
   R.forEach(mkLabel);
   if(!RT)S.forEach(s=>{     // 顯示路線時先把 1～8 編號收起來，避免跟路線、「到了」疊在一起
-    const [x,y]=P(s.f[0],s.f[1],ZH(s.zt)+40*FK);
-    const col=s.back?'#2bb3a3':'#ff7a45';
-    const g=el("g",{class:"pin","data-n":s.n,transform:`translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${FK})`},pinsG,
+    const pk=NARROW?1.35:1;
+    const [x,y]=P(s.f[0],s.f[1],ZH(s.zt)+40);
+    const col=s.back?'#2bb3a3':'#35464e';
+    const g=el("g",{class:"pin","data-n":s.n,transform:`translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${pk})`},pinsG,
       `<g class="bob"><path d="M-7 12 L0 26 L7 12Z" fill="${col}"/><circle r="17" fill="${col}"/><text>${s.n}</text></g>`);
     g.addEventListener("click",()=>selStep(s));
   });
@@ -415,12 +454,15 @@ function mkLabel(r){
   const g=el("g",{class:"lbl","data-id":r.id},labels);
   const overview=NARROW&&!(RT&&RT.pts.length>1);                  // 手機總覽：字放大，太小的次要標籤先不顯示
   if(overview&&(r.fs||14)<=12&&!r.sub)return;
+  // 手機一開始的全景只留大區名和前幾站；選位置（找廁所）時要認地方，保留較多標籤
+  if(overview&&!GO[st.mode]&&!r.sub&&!((r.fs||14)>=17||r.id==="triage"||r.id==="pay"||r.id==="in1"))return;
   const fs=(r.fs||14)*(r.sub?Math.min(FK,1.3):FK);
   if(r.flat){                                        // 標籤牌：不畫方塊
     const tx=(r.i?r.i+" ":"")+r.t,w=(r.t.length+(r.i?1.6:0))*fs+18,h=fs*1.75;
     g.setAttribute("style","pointer-events:auto;cursor:pointer");
-    el("rect",{x:cx-w/2,y:cy-h/2,width:w,height:h,rx:h/2,fill:r.c,stroke:shade(r.c,.6),"stroke-width":2},g);
-    el("text",{x:cx,y:cy+fs*.36,"font-size":fs,"font-weight":800,"text-anchor":"middle",fill:"#35464e"},g,tx);
+    const key=r.id==="in1";                         // 地點名＝白底加框；門、通道＝無框小膠囊
+    el("rect",{x:cx-w/2,y:cy-h/2,width:w,height:h,rx:key?7:h/2,fill:key?"#fff":"#ffffffd9",stroke:key?"#e08a4a":"none","stroke-width":2.5},g);
+    el("text",{x:cx,y:cy+fs*.36,"font-size":fs,"font-weight":800,"text-anchor":"middle",fill:key?"#35464e":"#4a6b78"},g,tx);
     g.addEventListener("click",()=>selRoom(r));
     return;}
   if(r.sub){
@@ -446,41 +488,67 @@ function mkLabel(r){
   if(r.i)el("text",{x:cx,y:(r.t?y-(lines.length>1?lh*.5:0)-fs-3:cy+fs*.4),"font-size":fs+(r.t?7:0),class:"ic"},g,r.i);
   lines.forEach((t,k)=>el("text",{x:cx,y:y+k*lh+(r.i&&r.t&&lines.length>1?lh*.5:0),"font-size":fs,class:"t",style:r.lc?"fill:"+r.lc:""},g,t));
 }
+const RC="#e8452c";      // 路線顏色：比大廳的橘色地板深，才跳得出來
 function drawRoute(){
   routeG.innerHTML="";topG.innerHTML="";
   if(!RT)return;
   const sp=RT.pts.map(p=>P(p[0],p[1],7));
   const d="M"+sp.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" L");
-  el("path",{d,fill:"none",stroke:"#fff","stroke-width":17,"stroke-linecap":"round","stroke-linejoin":"round",opacity:.95},routeG);
-  el("path",{d,fill:"none",stroke:"#ff7a45","stroke-width":10,"stroke-linecap":"round","stroke-linejoin":"round"},routeG);
-  let acc=0,next=22;
+  el("path",{d,fill:"none",stroke:"#000","stroke-width":22,"stroke-linecap":"round","stroke-linejoin":"round",opacity:.16},routeG);
+  el("path",{d,fill:"none",stroke:"#fff","stroke-width":18,"stroke-linecap":"round","stroke-linejoin":"round"},routeG);
+  el("path",{d,fill:"none",stroke:RC,"stroke-width":10,"stroke-linecap":"round","stroke-linejoin":"round"},routeG);
+  let acc=0,next=22;const samp=[];
   for(let i=1;i<sp.length;i++){
     const [x0,y0]=sp[i-1],[x1,y1]=sp[i];const L2=Math.hypot(x1-x0,y1-y0);if(L2<.01)continue;
     const a=Math.atan2(y1-y0,x1-x0)*180/Math.PI;
+    for(let q=0;q<L2;q+=12)samp.push([x0+(x1-x0)*q/L2,y0+(y1-y0)*q/L2]);
     while(next<=acc+L2){const t=(next-acc)/L2;
       el("path",{d:"M-4 -5 L4 0 L-4 5",fill:"none",stroke:"#fff","stroke-width":3,"stroke-linecap":"round","stroke-linejoin":"round",
         transform:`translate(${(x0+(x1-x0)*t).toFixed(1)},${(y0+(y1-y0)*t).toFixed(1)}) rotate(${a.toFixed(1)})`},routeG);
       next+=32;}
     acc+=L2;
   }
-  // 「到了」標記：尖端指在目的地最靠後的角落，不蓋住目的地自己的名字
+  // 牌子的擺放：在端點四周找一個不蓋住地圖文字、路線和其他牌子的位置，再用細線指回端點
+  const obst=[...labels.querySelectorAll("text,rect")].map(e=>{const b=e.getBBox();return [b.x-3,b.y-3,b.width+6,b.height+6,(+e.getAttribute("font-size")||0)>=40?4:1]}).filter(b=>b[2]>6);   // 大字母 A／B／D／E 最不能蓋
+  const vb=svg.viewBox.baseVal,placed=[];
+  function place(px,py,w,h,below){
+    const dx=w/2-12*FK,c=[],ys=below?[1,-1]:[-1,1];
+    [34,62,92].forEach(r=>ys.forEach(s=>[0,-dx,dx].forEach(x=>c.push([x,s*r*FK]))));
+    [0,-34,34].forEach(y=>c.push([-(w/2+24*FK),y*FK],[w/2+24*FK,y*FK]));
+    let best=c[0],bs=1e18;
+    c.forEach((o,i)=>{const x=px+o[0]-w/2,y=py+o[1]-h/2;let s=i*25;
+      const ov=r=>Math.max(0,Math.min(x+w,r[0]+r[2])-Math.max(x,r[0]))*Math.max(0,Math.min(y+h,r[1]+r[3])-Math.max(y,r[1]));
+      obst.forEach(r=>s+=ov(r)*5*r[4]);placed.forEach(r=>s+=ov(r)*12);
+      samp.forEach(p=>{if(p[0]>x-4&&p[0]<x+w+4&&p[1]>y-4&&p[1]<y+h+4)s+=150});
+      s+=1e5*((x<vb.x+4)+(x+w>vb.x+vb.width-4)+(y<vb.y+4)+(y+h>vb.y+vb.height-4));
+      if(s<bs){bs=s;best=o}});
+    placed.push([px+best[0]-w/2,py+best[1]-h/2,w,h]);return best;
+  }
+  const lead=(x,y,o,col)=>{const a={x1:x.toFixed(1),y1:y.toFixed(1),x2:(x+o[0]).toFixed(1),y2:(y+o[1]).toFixed(1),"stroke-linecap":"round"};
+    el("line",Object.assign({stroke:"#fff","stroke-width":6*FK},a),topG);el("line",Object.assign({stroke:col,"stroke-width":2.5*FK},a),topG)};
   // 中途停靠點（檢傷、掛號、候診、結帳）
   RT.stops.forEach(s=>{const [x,y]=P(s.p[0],s.p[1],7),w=s.t.length*14+18;
+    placed.push([x+15*FK,y-11*FK,w*FK,22*FK]);
     el("g",{transform:`translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${FK})`},routeG,
-      `<circle r="9" fill="#fff" stroke="#ff7a45" stroke-width="4"/><rect x="15" y="-11" width="${w}" height="22" rx="11" fill="#2bb3a3" stroke="#fff" stroke-width="2"/><text x="${15+w/2}" y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${s.t}</text>`)});
-  // 出發點與「到了」：畫在最上層，不會被房間名稱蓋住；「到了」的尖端指在路線終點
+      `<circle r="9" fill="#fff" stroke="${RC}" stroke-width="4"/><rect x="15" y="-11" width="${w}" height="22" rx="11" fill="#2bb3a3" stroke="#fff" stroke-width="2"/><text x="${15+w/2}" y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${s.t}</text>`)});
+  // 出發點與「到了」：畫在最上層，牌子上直接寫地點名稱（出發：候診區／到了：X光室）
   const first=RT.pts[0],last=RT.pts[RT.pts.length-1];
-  // 牌子上直接寫地點名稱（出發：候診區／到了：X光室），就算壓到地圖上的字也看得出是哪裡
   const pw=s=>s.length*13+22;
   const [sx,sy]=P(first[0],first[1],7),[ex,ey]=P(last[0],last[1],RT.tipZ!=null?RT.tipZ:7);
   const short=Math.hypot(ex-sx,ey-sy)<70*FK;                       // 路線很短時不放出發牌，免得兩塊牌子疊在一起
-  if(RT.pts.length>1&&!short&&!RT.stops.some(s=>s.p===first)){
-    const st1="出發："+RT.from,w=pw(st1);
-    el("g",{transform:`translate(${sx.toFixed(1)},${sy.toFixed(1)}) scale(${FK})`},topG,
-      `<circle r="9" fill="#1e88e5" stroke="#fff" stroke-width="3"/><rect x="${-w/2}" y="14" width="${w}" height="22" rx="11" fill="#1e88e5" stroke="#fff" stroke-width="2"/><text x="0" y="30" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${st1}</text>`);}
   const mk=RT.pts.length>1?"到了："+RT.to:RT.to,mw=pw(mk);
-  el("g",{transform:`translate(${ex.toFixed(1)},${(ey-30*FK).toFixed(1)}) scale(${FK})`},topG,
-    `<g class="bob fast"><path d="M-7 12 L0 28 L7 12Z" fill="#e8523a"/><rect x="${-mw/2}" y="-12" width="${mw}" height="26" rx="13" fill="#e8523a" stroke="#fff" stroke-width="3"/><text x="0" y="6" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${mk}</text></g>`);
+  const eo=place(ex,ey,mw*FK,26*FK,false);
+  lead(ex,ey,eo,RC);
+  el("g",{transform:`translate(${ex.toFixed(1)},${ey.toFixed(1)}) scale(${FK})`},topG,
+    `<circle r="9" fill="none" stroke="${RC}" stroke-width="3"><animate attributeName="r" values="8;22" dur="1.2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;0" dur="1.2s" repeatCount="indefinite"/></circle><circle r="8" fill="${RC}" stroke="#fff" stroke-width="3"/>`);
+  el("g",{transform:`translate(${(ex+eo[0]).toFixed(1)},${(ey+eo[1]).toFixed(1)}) scale(${FK})`},topG,
+    `<rect x="${-mw/2}" y="-13" width="${mw}" height="26" rx="13" fill="${RC}" stroke="#fff" stroke-width="3"/><text x="0" y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${mk}</text>`);
+  if(RT.pts.length>1&&!short&&!RT.stops.some(s=>s.p===first)){
+    const st1="出發："+RT.from,w=pw(st1),so=place(sx,sy,w*FK,22*FK,true);
+    lead(sx,sy,so,"#1e88e5");
+    el("g",{transform:`translate(${sx.toFixed(1)},${sy.toFixed(1)}) scale(${FK})`},topG,`<circle r="8" fill="#1e88e5" stroke="#fff" stroke-width="3"/>`);
+    el("g",{transform:`translate(${(sx+so[0]).toFixed(1)},${(sy+so[1]).toFixed(1)}) scale(${FK})`},topG,
+      `<rect x="${-w/2}" y="-11" width="${w}" height="22" rx="11" fill="#1e88e5" stroke="#fff" stroke-width="2"/><text x="0" y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${st1}</text>`);}
 }
 function hov(id,on){document.querySelectorAll(`[data-id="${id}"]`).forEach(e=>e.classList.toggle("hov",!!on))}
 function applyState(){
@@ -536,7 +604,7 @@ function routeText(){
       head:`${G.n}在紅色標記的位置。你現在在哪裡？`,steps:[
       "直接<b>點地圖上你現在所在的位置</b>，或在上面的按鈕選一個。",
       `選好後，地圖會畫出從那裡走到${G.n}的路線。`]};
-    const head=`從 ${ORG[o].n} 去${G.n}${st.guess?"（依你點的位置判斷，不對請在上面重選）":""}：`,I=(st.guess?`依你點的位置，把你當作在<b>「${ORG[o].n}」</b>附近。不對的話，請在上面的按鈕重新選。<br>`:"")+"請跟著地圖上的橘色箭頭路線走；地圖下方有一步一步的文字說明。";
+    const head=`從 ${ORG[o].n} 去${G.n}${st.guess?"（依你點的位置判斷，不對請在上面重選）":""}：`,I=(st.guess?`依你點的位置，把你當作在<b>「${ORG[o].n}」</b>附近。不對的話，請在上面的按鈕重新選。<br>`:"")+"請跟著地圖上的紅色箭頭路線走；地圖下方有一步一步的文字說明。";
     const obs=m==="obs";
     // 目的地都在五官科前走道的同一側：往裡面走時在左手邊，往大廳方向走時在右手邊
     const side=s=>`<span class="hl">📍 <b>${s}</b>緊鄰走道的就是<b>${G.n}</b>${G.hint}。${obs?"到了請依護理人員的指示。":""}</span>`;
@@ -576,14 +644,14 @@ function routeText(){
     "從急診入口進門後<b>直走</b>，正前方就是<b>檢傷站</b>。護理師會量血壓、體溫，問你哪裡不舒服，判斷嚴重程度（這就是「檢傷」）。",
     `檢傷完，從檢傷站<b>左邊</b>繞過去再往前走，<b>左手邊</b>的櫃台就是${PAYNAME}，在這裡掛號。`,
     "掛完號<b>繼續往前直走</b>，<b>左手邊</b>的座位區就是<b>候診區</b>，坐著等叫號。",
-    `<span class="hl">📍 聽到叫號、護理師告訴你去哪一區後，按上面的「護理師說我去某一區」，地圖會接著帶你走。</span>`]};
+    `<span class="hl">📍 聽到叫號、護理師告訴你去哪一區後，按上面的「去看診區」，地圖會接著帶你走。</span>`]};
   if(m==="zone"&&L){
     const tail=[`<span class="hl">📍 抵達 ${name}，<b>紫色框</b>是看診區，由醫師看診。</span>`,
-      "醫師請你去打針或照 X 光時，按上面的「醫師叫我去打針、照 X 光」；看完了按「看完了，要結帳離開」。"];
+      "醫師請你去打針或照 X 光時，按上面的「打針、照 X 光」；看完了按「結帳離開」。"];
     if(L==="P")return {title:name,head:`去 ${name}，從候診區出發：`,steps:[
       "從<b>候診區</b>起身，<b>背對急診入口、繼續往裡面走</b>到底。",
       `<span class="hl">📍 正前方就是<b>兒科診療區</b>，小兒急診（P區）在它的<b>右手邊</b>，依護理人員指示看診。</span>`,
-      "醫師請小朋友去照 X 光時，按上面的「醫師叫我去打針、照 X 光」；看完了按「看完了，要結帳離開」。"]};
+      "醫師請小朋友去照 X 光時，按上面的「打針、照 X 光」；看完了按「結帳離開」。"]};
     if(AB)return {title:name,head:`去 ${name}，從候診區出發：`,steps:[
       "從<b>候診區</b>起身，先往大廳中間走幾步，再<b>朝急診入口的方向往回走</b>。",
       "經過保護室和它旁邊的走道<b>先不要轉</b>，繼續往前，走到<b>快到檢傷站</b>的地方<b>左轉</b>。",
@@ -600,7 +668,7 @@ function routeText(){
       `看完診後，留在 <b>${L} 區</b>內，往<b>${pair}的交界處</b>走。`,
       `交界處的<b>紅色框</b>就是<b>注射區</b>，不需要走出 ${L} 區。`,
       `<span class="hl">📍 抵達注射區，把單子交給護理人員，等候抽血或打針。</span>`,
-      `完成後依護理人員指示，回 <b>${L} 區</b>等候結果；看完了按上面的「看完了，要結帳離開」。`]};
+      `完成後依護理人員指示，回 <b>${L} 區</b>等候結果；看完了按上面的「結帳離開」。`]};
   }
   if(m==="next"&&L&&st.next==="xray"){
     const back=`檢查完沿原路回${L==="P"?"<b>兒科診療區</b>":` <b>${L} 區</b>`}，等醫師說明結果。`;
@@ -664,6 +732,7 @@ function refresh(){
   document.querySelector('.nb[data-n="inj"]').style.display=L==="P"?"none":"";
   $("zclr").style.display=m?"":"none";
   $("wcRow").style.display=GO[m]?"":"none";
+  document.querySelector(".mapwrap").classList.toggle("go",!!GO[m]);     // 鳥瞰選位置時，說明卡移到地圖下方，不壓在房間上
   document.querySelector('.ob[data-o="obsO"]').style.display=m==="obs"?"none":"";
   // 找廁所時切成鳥瞰圖，方便點選自己的位置；離開時回到立體視角
   const near=a=>ang+(((a-ang)%360+540)%360-180);
@@ -674,7 +743,7 @@ function refresh(){
   if(X){
     card.style.display="";t.style.setProperty("--zc",L?ZINFO[L].c:"#ffd9c2");
     t.innerHTML=`<b>${X.head}</b><ol>`+X.steps.map((s,i)=>`<li><span class="n">${i+1}</span><span>${s}</span></li>`).join("")+"</ol>";
-    show(X.title,X.info||"請跟著地圖上的橘色箭頭路線走；地圖下方有一步一步的文字說明。");
+    show(X.title,X.info||"請跟著地圖上的紅色箭頭路線走；地圖下方有一步一步的文字說明。");
   }else if(m){
     const msg=st.unk?"不確定在哪一區沒關係：請看牆上或床邊的區域標示（A／B／D／E），或直接問身邊的護理人員，再回來選區。"
       :m==="next"&&L?"請在上面選「抽血／打針」或「照 X 光」。":"請在上面選你在哪一區，地圖就會畫出路線。";
