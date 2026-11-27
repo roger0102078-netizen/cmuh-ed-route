@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>中國附醫急診就診導覽</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2bb3a3">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="急診導覽">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <style>
 :root{--bg:#dff3ec;--ink:#2b3a42;--card:#fff;--edge:#c3e2d4;}
 *{box-sizing:border-box}
@@ -306,9 +313,9 @@ function curRoute(){
   const m=st.mode,L=st.zone,zn=L==="P"?"兒科診療區":L?L+" 區":"";
   if(GO[m]){r.to=GO[m].n;r.from=st.org?ORG[st.org].n:""}
   else if(m==="arrive"){r.from="急診入口";r.to="候診區"}
-  else if(m==="zone"){r.from="候診區";r.to=L==="P"?"兒科診療區":L+" 區看診區"}
+  else if(m==="zone"){r.from="候診區";r.to=L==="P"?"P 區（兒科診療區）":L+" 區看診區"}
   else if(m==="next"){r.from=zn;r.to=st.next==="inj"?"注射區":"X光室"}
-  else if(m==="pay"){r.from=zn||"批價櫃台";r.to="出口"}
+  else if(m==="pay"){r.from=zn||"批價櫃台";r.to="急診入口（出口）"}
   return r;
 }
 function curRoute0(){
@@ -324,8 +331,8 @@ function curRoute0(){
       :[WAITP,[200,300],[200,NY],[Z.x,NY],[Z.x,Z.y]];
     return {key:"zone"+L,pts,stops:[],dest:L==="P"?"pedsclinic":"z"+L};}
   if(m==="next"&&L&&st.next==="inj"&&L!=="P"){
-    const yy=isAB(L)?665:455,ex=(L==="A"||L==="D")?472:528;
-    return {key:"inj"+L,pts:[[Z.x+(ex<500?30:-30),yy],[ex,yy]],stops:[],dest:injOf(L)};}
+    const ex=(L==="A"||L==="D")?486:514;      // 從看診區中央走到注射區靠自己這一側
+    return {key:"inj"+L,pts:[[Z.x,Z.y],[ex,Z.y]],stops:[],dest:injOf(L)};}
   if(m==="next"&&L&&st.next==="xray"){
     // X光室的入口在五官科前面的走道上；從診療區要穿過牆最後面的門
     const pts=L==="P"?[[160,156],[160,322],[815,322],[815,345]]
@@ -456,6 +463,9 @@ function mkLabel(r){
   if(overview&&(r.fs||14)<=12&&!r.sub)return;
   // 手機一開始的全景只留大區名和前幾站；選位置（找廁所）時要認地方，保留較多標籤
   if(overview&&!GO[st.mode]&&!r.sub&&!((r.fs||14)>=17||r.id==="triage"||r.id==="pay"||r.id==="in1"))return;
+  // 路線的終點（和出發的看診區）已經有「到了／出發」牌子寫名稱，原本的標籤收起來，免得被圓點蓋住
+  if(RT&&RT.dest===r.id&&!r.sub)return;
+  const hideQ=r.sub&&RT&&(RT.dest===r.id||(RT.pts.length>1&&RT.pts[0][0]===ZINFO[r.t].x&&RT.pts[0][1]===ZINFO[r.t].y));
   const fs=(r.fs||14)*(r.sub?Math.min(FK,1.3):FK);
   if(r.flat){                                        // 標籤牌：不畫方塊
     const tx=(r.i?r.i+" ":"")+r.t,w=(r.t.length+(r.i?1.6:0))*fs+18,h=fs*1.75;
@@ -469,7 +479,7 @@ function mkLabel(r){
     const k2=Math.min(FK,1.3);
     el("text",{x:cx,y:cy+fs*0.30,"font-size":fs,class:"t",style:"fill:"+shade(r.c,.55)},g,r.t);
     el("text",{x:cx,y:cy+fs*0.30+20*k2,"font-size":14*k2,class:"t"},g,r.tag);
-    if(!overview){const [qx,qy]=P(r.fr[0]+r.fr[2]/2,r.fr[1]+r.fr[3]/2,ZH(r.z));
+    if(!overview&&!hideQ){const [qx,qy]=P(r.fr[0]+r.fr[2]/2,r.fr[1]+r.fr[3]/2,ZH(r.z));
       el("text",{x:qx,y:qy+4,"font-size":11*k2,class:"t",style:"fill:"+PURPLE},g,"看診區");}
     return;}
   if(r.v){
@@ -511,6 +521,8 @@ function drawRoute(){
   // 牌子的擺放：在端點四周找一個不蓋住地圖文字、路線和其他牌子的位置，再用細線指回端點
   const obst=[...labels.querySelectorAll("text,rect")].map(e=>{const b=e.getBBox();return [b.x-3,b.y-3,b.width+6,b.height+6,(+e.getAttribute("font-size")||0)>=40?4:1]}).filter(b=>b[2]>6);   // 大字母 A／B／D／E 最不能蓋
   const vb=svg.viewBox.baseVal,placed=[];
+  if(NARROW){const u=vb.width/(svg.clientWidth||375);          // 手機：避開右上角的旋轉鈕和左上角的提示
+    obst.push([vb.x+vb.width-150*u,vb.y,150*u,58*u,40],[vb.x,vb.y,200*u,36*u,40]);}
   function place(px,py,w,h,below){
     const dx=w/2-12*FK,c=[],ys=below?[1,-1]:[-1,1];
     [34,62,92].forEach(r=>ys.forEach(s=>[0,-dx,dx].forEach(x=>c.push([x,s*r*FK]))));
@@ -535,7 +547,7 @@ function drawRoute(){
   const first=RT.pts[0],last=RT.pts[RT.pts.length-1];
   const pw=s=>s.length*13+22;
   const [sx,sy]=P(first[0],first[1],7),[ex,ey]=P(last[0],last[1],RT.tipZ!=null?RT.tipZ:7);
-  const short=Math.hypot(ex-sx,ey-sy)<70*FK;                       // 路線很短時不放出發牌，免得兩塊牌子疊在一起
+  const short=Math.hypot(ex-sx,ey-sy)<45*FK;                       // 路線很短時不放出發牌，免得兩塊牌子疊在一起
   const mk=RT.pts.length>1?"到了："+RT.to:RT.to,mw=pw(mk);
   const eo=place(ex,ey,mw*FK,26*FK,false);
   lead(ex,ey,eo,RC);
@@ -650,7 +662,7 @@ function routeText(){
       "醫師請你去打針或照 X 光時，按上面的「打針、照 X 光」；看完了按「結帳離開」。"];
     if(L==="P")return {title:name,head:`去 ${name}，從候診區出發：`,steps:[
       "從<b>候診區</b>起身，<b>背對急診入口、繼續往裡面走</b>到底。",
-      `<span class="hl">📍 正前方就是<b>兒科診療區</b>，小兒急診（P區）在它的<b>右手邊</b>，依護理人員指示看診。</span>`,
+      `<span class="hl">📍 正前方就是 <b>P 區的兒科診療區</b>（地圖上「到了」的位置），到這裡找護理人員報到；<b>右手邊</b>黃色的大區塊也是小兒急診（P區），依護理人員指示看診。</span>`,
       "醫師請小朋友去照 X 光時，按上面的「打針、照 X 光」；看完了按「結帳離開」。"]};
     if(AB)return {title:name,head:`去 ${name}，從候診區出發：`,steps:[
       "從<b>候診區</b>起身，先往大廳中間走幾步，再<b>朝急診入口的方向往回走</b>。",
@@ -755,7 +767,12 @@ function refresh(){
 /* ---------- 流程清單 ---------- */
 S.forEach(s=>{const li=document.createElement("li");li.dataset.n=s.n;
   li.innerHTML=`<span class="num ${s.back?'back':''}">${s.n}</span><span>${s.t}</span>`;
-  li.onclick=()=>{if(st.mode)clearRoute();selStep(s);toMap()};$("steps").appendChild(li);});
+  li.onclick=()=>{
+    if(st.mode){   // 已經在帶路時，點流程只看說明，路線保留
+      st.step=s.n;applyState();
+      show(`第 ${s.n} 站｜${s.t}`,s.d+(RT?"<br><span style=\"color:#5b6b73\">（地圖上的路線還在，沒有被清掉。）</span>":""));
+      $("info").scrollIntoView({block:"nearest",behavior:"smooth"});return}
+    selStep(s);toMap()};$("steps").appendChild(li);});
 document.querySelectorAll(".zb[data-z]").forEach(b=>b.onclick=()=>pickZone(b.dataset.z));
 document.querySelectorAll(".ob").forEach(b=>b.onclick=()=>pickOrg(b.dataset.o));
 // 找廁所：點地圖上的位置 → 換算成平面座標 → 找最近的出發點
@@ -822,6 +839,7 @@ window.addEventListener("pointercancel",()=>{svg.classList.remove("drag");drag=n
 svg.addEventListener("dragstart",e=>e.preventDefault());
 show(`第 1 站｜${S[0].t}`,S[0].d);
 requestAnimationFrame(frame);
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 </script>
 </body>
 </html>
